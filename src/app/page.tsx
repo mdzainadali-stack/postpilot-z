@@ -368,7 +368,7 @@ export default function AISocialPoster() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-gray-950 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950 dark:to-black">
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="hidden md:flex w-64 flex-col bg-background/80 backdrop-blur-sm border-r p-6">
@@ -395,7 +395,7 @@ export default function AISocialPoster() {
                 onClick={() => setActiveView(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeView === item.id
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 }`}
               >
@@ -695,7 +695,7 @@ export default function AISocialPoster() {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-none">
+                  <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-black border-none">
                     <CardContent className="pt-6">
                       <Sparkles className="w-8 h-8 text-purple-600 mb-3" />
                       <h3 className="font-semibold mb-2">✨ AI Pro Tip</h3>
