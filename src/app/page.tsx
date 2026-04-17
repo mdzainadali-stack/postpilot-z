@@ -28,6 +28,7 @@ import {
   Trash2,
   Edit2
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { 
   Card, 
   CardContent, 
@@ -665,6 +666,12 @@ export default function AISocialPoster() {
 
           <Separator />
 
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between p-3">
+            <span className="text-sm font-semibold">Theme</span>
+            <ThemeToggle />
+          </div>
+
           <div className="pt-4 flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-950/30 border border-blue-200/30 dark:border-blue-800/30">
             <Avatar className="w-12 h-12 ring-2 ring-blue-500/30 hover:ring-blue-500/60 transition-all">
               <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
@@ -713,10 +720,13 @@ export default function AISocialPoster() {
                 AI Social
               </span>
             </div>
-            <Avatar className="w-8 h-8">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
-              <AvatarFallback>D</AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Avatar className="w-8 h-8">
+                <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
+                <AvatarFallback>D</AvatarFallback>
+              </Avatar>
+            </div>
           </div>
 
           {/* Dashboard View */}
