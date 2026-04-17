@@ -1,928 +1,636 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useTheme } from 'next-themes'
-import {
-  LayoutDashboard,
-  Plus,
-  Edit,
-  Trash2,
-  Youtube,
-  Facebook,
-  Instagram,
-  Sun,
-  Moon,
-  Image as ImageIcon,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Calendar,
-  User,
-} from 'lucide-react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { useToast } from '@/hooks/use-toast'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, addDays, parseISO } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, ChevronLeft, ChevronRight, Plus, Trash2, Clock, Calendar as CalendarIcon, Bell, AlertCircle } from 'lucide-react';
 
-interface PlatformConnection {
-  id: string
-  platform: 'youtube' | 'instagram' | 'facebook'
-  connected: boolean
-  accountName: string | null
-  accountHandle: string | null
-  avatarUrl: string | null
+interface SocialPost {
+  id: string;
+  caption: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  platforms: string[];
+  status: string;
+  scheduledAt?: string;
+  postedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface Post {
-  id: string
-  caption: string
-  mediaUrl: string | null
-  platforms: string[]
-  status: 'draft' | 'scheduled' | 'posted' | 'failed'
-  scheduledAt: string | null
-  createdAt: string
+interface Reminder {
+  id: string;
+  title: string;
+  date: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export default function SocialMediaDashboard() {
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
-  const [connections, setConnections] = useState<PlatformConnection[]>([])
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('all')
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function Home() {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Dialog states
-  const [connectDialogOpen, setConnectDialogOpen] = useState(false)
-  const [selectedPlatform, setSelectedPlatform] = useState<'youtube' | 'instagram' | 'facebook' | null>(null)
-  const [accountName, setAccountName] = useState('')
-  const [accountHandle, setAccountHandle] = useState('')
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
 
-  // Create/Edit post dialog states
-  const [postDialogOpen, setPostDialogOpen] = useState(false)
-  const [editingPost, setEditingPost] = useState<Post | null>(null)
-  const [postCaption, setPostCaption] = useState('')
-  const [postMediaUrl, setPostMediaUrl] = useState('')
-  const [postPlatforms, setPostPlatforms] = useState<string[]>([])
-  const [postStatus, setPostStatus] = useState<'draft' | 'scheduled' | 'posted'>('draft')
-  const [postScheduledAt, setPostScheduledAt] = useState('')
+  // Form states
+  const [postCaption, setPostCaption] = useState('');
+  const [postMediaUrl, setPostMediaUrl] = useState('');
+  const [postPlatforms, setPostPlatforms] = useState<string[]>([]);
+  const [postScheduledFor, setPostScheduledFor] = useState('');
 
-  const { toast } = useToast()
+  const [reminderTitle, setReminderTitle] = useState('');
+  const [reminderDate, setReminderDate] = useState('');
+
+  const [eventTitle, setEventTitle] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventNote, setEventNote] = useState('');
+
+  // Fetch data
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [postsRes, remindersRes, eventsRes] = await Promise.all([
+        fetch('/api/posts'),
+        fetch('/api/reminders'),
+        fetch('/api/events'),
+      ]);
+
+      const postsData = await postsRes.json();
+      const remindersData = await remindersRes.json();
+      const eventsData = await eventsRes.json();
+
+      setPosts(postsData.posts || []);
+      setReminders(remindersData.reminders || []);
+      setEvents(eventsData.events || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setMounted(true)
-    loadConnections()
-    loadPosts()
-  }, [])
+    fetchData();
+  }, []);
 
-  const loadConnections = async () => {
-    try {
-      const response = await fetch('/api/connections')
-      if (response.ok) {
-        const data = await response.json()
-        setConnections(data.connections || [])
+  // Calendar helpers
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calendarDays = eachDayOfInterval({ start: startOfWeek(monthStart), end: endOfMonth(monthEnd) });
+
+  const getPostsForDay = (date: Date) => {
+    return posts.filter(post => {
+      if (!post.scheduledAt) return false;
+      const scheduledDate = new Date(post.scheduledAt);
+      return isSameDay(scheduledDate, date);
+    });
+  };
+
+  const getRemindersForDay = (date: Date) => {
+    return reminders.filter(reminder => {
+      const reminderDate = new Date(reminder.date);
+      return isSameDay(reminderDate, date);
+    });
+  };
+
+  const getEventsForDay = (date: Date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return isSameDay(eventDate, date);
+    });
+  };
+
+  // Coming Up - Next 5 items
+  const getComingUp = () => {
+    const now = new Date();
+    const allItems: Array<{ type: 'post' | 'reminder' | 'event'; date: Date; title: string; data: any }> = [];
+
+    posts.filter(p => p.status === 'scheduled' && p.scheduledAt).forEach(post => {
+      const date = new Date(post.scheduledAt!);
+      if (date > now) {
+        allItems.push({ type: 'post', date, title: post.caption, data: post });
       }
-    } catch (error) {
-      console.error('Failed to load connections:', error)
-    }
-  }
+    });
 
-  const loadPosts = async () => {
-    try {
-      const response = await fetch('/api/posts')
-      if (response.ok) {
-        const data = await response.json()
-        setPosts(data.posts || [])
+    reminders.filter(r => !r.completed).forEach(reminder => {
+      const date = new Date(reminder.date);
+      if (date > now) {
+        allItems.push({ type: 'reminder', date, title: reminder.title, data: reminder });
       }
-    } catch (error) {
-      console.error('Failed to load posts:', error)
-    }
-  }
+    });
 
-  const handleConnect = async () => {
-    if (!selectedPlatform || !accountName || !accountHandle) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please fill in all fields.',
-      })
-      return
-    }
+    events.forEach(event => {
+      const date = new Date(event.date);
+      if (date > now) {
+        allItems.push({ type: 'event', date, title: event.title, data: event });
+      }
+    });
 
-    setLoading(true)
+    return allItems
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .slice(0, 5);
+  };
+
+  const comingUp = getComingUp();
+
+  // CRUD operations
+  const createPost = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch('/api/connections', {
+      const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          platform: selectedPlatform,
-          connected: true,
-          accountName,
-          accountHandle,
+          caption: postCaption,
+          mediaUrl: postMediaUrl || undefined,
+          platforms: postPlatforms,
+          status: postScheduledFor ? 'scheduled' : 'draft',
+          scheduledAt: postScheduledFor || undefined,
         }),
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setConnections(prev => 
-          prev.map(conn => 
-            conn.platform === selectedPlatform ? data.connection : conn
-          )
-        )
-        toast({
-          title: 'Success',
-          description: `${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} connected successfully!`,
-        })
-        setConnectDialogOpen(false)
-        setAccountName('')
-        setAccountHandle('')
-        setSelectedPlatform(null)
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to connect platform.',
-        })
+        setPostDialogOpen(false);
+        setPostCaption('');
+        setPostMediaUrl('');
+        setPostPlatforms([]);
+        setPostScheduledFor('');
+        fetchData();
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to connect platform.',
-      })
-    } finally {
-      setLoading(false)
+      console.error('Error creating post:', error);
     }
-  }
+  };
 
-  const handleDisconnect = async (platform: 'youtube' | 'instagram' | 'facebook') => {
-    setLoading(true)
+  const createReminder = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch(`/api/connections?platform=${platform}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setConnections(prev => 
-          prev.map(conn => 
-            conn.platform === platform ? data.connection : conn
-          )
-        )
-        toast({
-          title: 'Success',
-          description: `${platform.charAt(0).toUpperCase() + platform.slice(1)} disconnected.`,
-        })
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to disconnect platform.',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const openConnectDialog = (platform: 'youtube' | 'instagram' | 'facebook') => {
-    setSelectedPlatform(platform)
-    setConnectDialogOpen(true)
-  }
-
-  const openCreatePostDialog = () => {
-    setEditingPost(null)
-    setPostCaption('')
-    setPostMediaUrl('')
-    setPostPlatforms([])
-    setPostStatus('draft')
-    setPostScheduledAt('')
-    setPostDialogOpen(true)
-  }
-
-  const openEditPostDialog = (post: Post) => {
-    setEditingPost(post)
-    setPostCaption(post.caption)
-    setPostMediaUrl(post.mediaUrl || '')
-    setPostPlatforms(post.platforms)
-    setPostStatus(post.status)
-    setPostScheduledAt(post.scheduledAt ? post.scheduledAt.slice(0, 16) : '')
-    setPostDialogOpen(true)
-  }
-
-  const handleSavePost = async () => {
-    if (!postCaption && !postMediaUrl) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please add a caption or media.',
-      })
-      return
-    }
-
-    if (postPlatforms.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please select at least one platform.',
-      })
-      return
-    }
-
-    setLoading(true)
-    try {
-      const isEdit = !!editingPost
-      const url = isEdit ? `/api/posts/${editingPost.id}` : '/api/posts'
-      const method = isEdit ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch('/api/reminders', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          caption: postCaption,
-          mediaUrl: postMediaUrl || null,
-          platforms: postPlatforms,
-          status: postStatus,
-          scheduledAt: postScheduledAt || null,
+          title: reminderTitle,
+          date: reminderDate,
         }),
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        if (isEdit) {
-          setPosts(prev => prev.map(p => p.id === editingPost.id ? data.post : p))
-          toast({
-            title: 'Success',
-            description: 'Post updated successfully!',
-          })
-        } else {
-          setPosts(prev => [data.post, ...prev])
-          toast({
-            title: 'Success',
-            description: 'Post created successfully!',
-          })
-        }
-        setPostDialogOpen(false)
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to save post.',
-        })
+        setReminderDialogOpen(false);
+        setReminderTitle('');
+        setReminderDate('');
+        fetchData();
       }
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to save post.',
-      })
-    } finally {
-      setLoading(false)
+      console.error('Error creating reminder:', error);
     }
-  }
+  };
 
-  const handleDeletePost = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) {
-      return
+  const createEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: eventTitle,
+          date: eventDate,
+          note: eventNote || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        setEventDialogOpen(false);
+        setEventTitle('');
+        setEventDate('');
+        setEventNote('');
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error creating event:', error);
     }
+  };
+
+  const toggleReminder = async (id: string) => {
+    const reminder = reminders.find(r => r.id === id);
+    if (!reminder) return;
 
     try {
-      const response = await fetch(`/api/posts/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        setPosts(prev => prev.filter(p => p.id !== id))
-        toast({
-          title: 'Success',
-          description: 'Post deleted successfully!',
-        })
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to delete post.',
-        })
-      }
+      await fetch(`/api/reminders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          completed: !reminder.completed,
+        }),
+      });
+      fetchData();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete post.',
-      })
+      console.error('Error toggling reminder:', error);
     }
-  }
+  };
 
-  const togglePlatform = (platform: string) => {
-    setPostPlatforms(prev =>
-      prev.includes(platform) ? prev.filter(p => p !== platform) : [...prev, platform]
-    )
-  }
-
-  const getFilteredPosts = () => {
-    if (activeTab === 'all') return posts
-    return posts.filter(post => post.status === activeTab)
-  }
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform) {
-      case 'youtube':
-        return 'bg-red-500'
-      case 'instagram':
-        return 'bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500'
-      case 'facebook':
-        return 'bg-blue-600'
-      default:
-        return 'bg-gray-500'
+  const deleteReminder = async (id: string) => {
+    try {
+      await fetch(`/api/reminders/${id}`, { method: 'DELETE' });
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
     }
-  }
+  };
 
-  const getPlatformBadgeVariant = (platform: string) => {
-    switch (platform) {
-      case 'youtube':
-        return 'bg-red-100 text-red-700 hover:bg-red-200'
-      case 'instagram':
-        return 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-      case 'facebook':
-        return 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-      default:
-        return ''
+  const deleteEvent = async (id: string) => {
+    try {
+      await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting event:', error);
     }
-  }
+  };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return <Badge variant="secondary">Draft</Badge>
-      case 'scheduled':
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">Scheduled</Badge>
-      case 'posted':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Posted</Badge>
-      case 'failed':
-        return <Badge variant="destructive">Failed</Badge>
-      default:
-        return <Badge>{status}</Badge>
-    }
-  }
+  const handleNextMonth = () => setCurrentDate(addDays(monthStart, 35));
+  const handlePrevMonth = () => setCurrentDate(addDays(monthStart, -35));
 
-  const getStats = () => {
-    const totalPosts = posts.length
-    const postsByPlatform = {
-      youtube: posts.filter(p => p.platforms.includes('youtube')).length,
-      instagram: posts.filter(p => p.platforms.includes('instagram')).length,
-      facebook: posts.filter(p => p.platforms.includes('facebook')).length,
-    }
-    const postsByStatus = {
-      draft: posts.filter(p => p.status === 'draft').length,
-      scheduled: posts.filter(p => p.status === 'scheduled').length,
-      posted: posts.filter(p => p.status === 'posted').length,
-      failed: posts.filter(p => p.status === 'failed').length,
-    }
-    const upcoming = posts
-      .filter(p => p.status === 'scheduled' && p.scheduledAt && new Date(p.scheduledAt) > new Date())
-      .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime())
-      .slice(0, 5)
-
-    return { totalPosts, postsByPlatform, postsByStatus, upcoming }
-  }
-
-  const stats = getStats()
-
-  if (!mounted) {
-    return null
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <LayoutDashboard className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Social Media Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-            <Avatar>
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
-              <AvatarFallback>
-                <User className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+            AI Social Poster
+          </h1>
+          <p className="text-muted-foreground">Plan and manage your social media content</p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 container px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
-          {/* Platform Connections */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Platform Connections</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* YouTube */}
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-red-500 flex items-center justify-center">
-                        <Youtube className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">YouTube</CardTitle>
-                        <CardDescription className="text-xs">
-                          {connections.find(c => c.platform === 'youtube')?.connected
-                            ? connections.find(c => c.platform === 'youtube')?.accountName
-                            : 'Not connected'}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {connections.find(c => c.platform === 'youtube')?.connected ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span className="text-green-600 font-medium">Connected</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        @{connections.find(c => c.platform === 'youtube')?.accountHandle}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleDisconnect('youtube')}
-                        disabled={loading}
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full bg-red-500 hover:bg-red-600"
-                      onClick={() => openConnectDialog('youtube')}
-                    >
-                      Connect YouTube
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Calendar Section - Left (2/3) */}
+          <div className="lg:col-span-2">
+            <Card className="backdrop-blur-sm bg-white/70 dark:bg-gray-800/70 shadow-xl">
+              <CardHeader className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {format(currentDate, 'MMMM yyyy')}
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="icon" onClick={handlePrevMonth}>
+                      <ChevronLeft className="h-4 w-4" />
                     </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Instagram */}
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 flex items-center justify-center">
-                        <Instagram className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">Instagram</CardTitle>
-                        <CardDescription className="text-xs">
-                          {connections.find(c => c.platform === 'instagram')?.connected
-                            ? connections.find(c => c.platform === 'instagram')?.accountName
-                            : 'Not connected'}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {connections.find(c => c.platform === 'instagram')?.connected ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span className="text-green-600 font-medium">Connected</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        @{connections.find(c => c.platform === 'instagram')?.accountHandle}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleDisconnect('instagram')}
-                        disabled={loading}
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600"
-                      onClick={() => openConnectDialog('instagram')}
-                    >
-                      Connect Instagram
+                    <Button variant="outline" size="icon" onClick={handleNextMonth}>
+                      <ChevronRight className="h-4 w-4" />
                     </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Facebook */}
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                        <Facebook className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">Facebook</CardTitle>
-                        <CardDescription className="text-xs">
-                          {connections.find(c => c.platform === 'facebook')?.connected
-                            ? connections.find(c => c.platform === 'facebook')?.accountName
-                            : 'Not connected'}
-                        </CardDescription>
-                      </div>
-                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {connections.find(c => c.platform === 'facebook')?.connected ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span className="text-green-600 font-medium">Connected</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        @{connections.find(c => c.platform === 'facebook')?.accountHandle}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleDisconnect('facebook')}
-                        disabled={loading}
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() => openConnectDialog('facebook')}
-                    >
-                      Connect Facebook
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Stats Overview */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Stats Overview</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Total Posts</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{stats.totalPosts}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>By Platform</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Youtube className="h-4 w-4 text-red-500" />
-                      <span>{stats.postsByPlatform.youtube}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Instagram className="h-4 w-4 text-purple-500" />
-                      <span>{stats.postsByPlatform.instagram}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Facebook className="h-4 w-4 text-blue-600" />
-                      <span>{stats.postsByPlatform.facebook}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>By Status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-gray-400" />
-                      <span>Draft: {stats.postsByStatus.draft}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-blue-500" />
-                      <span>Scheduled: {stats.postsByStatus.scheduled}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-green-500" />
-                      <span>Posted: {stats.postsByStatus.posted}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
-                      <span>Failed: {stats.postsByStatus.failed}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Upcoming</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {stats.upcoming.length > 0 ? (
-                    <div className="space-y-1 text-xs">
-                      {stats.upcoming.slice(0, 3).map(post => (
-                        <div key={post.id} className="truncate" title={post.caption}>
-                          {new Date(post.scheduledAt!).toLocaleDateString()}
-                        </div>
-                      ))}
-                      {stats.upcoming.length > 3 && (
-                        <div className="text-muted-foreground">+{stats.upcoming.length - 3} more</div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">No upcoming posts</div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Posts Management */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold">Posts Management</h2>
-              <Button onClick={openCreatePostDialog}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Post
-              </Button>
-            </div>
-
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:w-auto">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="draft">Draft</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-                <TabsTrigger value="posted">Posted</TabsTrigger>
-                <TabsTrigger value="failed">Failed</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
-                  {getFilteredPosts().map((post) => (
-                    <Card key={post.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base truncate">
-                              {post.caption.slice(0, 50) || '(No caption)'}
-                              {post.caption.length > 50 && '...'}
-                            </CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <Clock className="h-3 w-3" />
-                              {new Date(post.createdAt).toLocaleDateString()}
-                            </CardDescription>
-                          </div>
-                          {getStatusBadge(post.status)}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {post.mediaUrl && (
-                          <div className="mb-3">
-                            <img
-                              src={post.mediaUrl}
-                              alt="Post media"
-                              className="w-full h-40 object-cover rounded-md"
-                            />
-                          </div>
-                        )}
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {post.platforms.map((platform) => (
-                            <Badge
-                              key={platform}
-                              variant="secondary"
-                              className={getPlatformBadgeVariant(platform)}
-                            >
-                              {platform === 'youtube' && <Youtube className="h-3 w-3 mr-1" />}
-                              {platform === 'instagram' && <Instagram className="h-3 w-3 mr-1" />}
-                              {platform === 'facebook' && <Facebook className="h-3 w-3 mr-1" />}
-                              {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                            </Badge>
-                          ))}
-                        </div>
-                        {post.scheduledAt && (
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                            <Calendar className="h-3 w-3" />
-                            Scheduled: {new Date(post.scheduledAt).toLocaleString()}
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => openEditPostDialog(post)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handleDeletePost(post.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {getFilteredPosts().length === 0 && (
-                    <Card className="col-span-1 lg:col-span-2">
-                      <CardContent className="py-12 text-center">
-                        <p className="text-muted-foreground">No posts found</p>
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
-              </TabsContent>
-            </Tabs>
-          </section>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {calendarDays.map((day) => {
+                    const postsForDay = getPostsForDay(day);
+                    const remindersForDay = getRemindersForDay(day);
+                    const eventsForDay = getEventsForDay(day);
+                    const hasContent = postsForDay.length > 0 || remindersForDay.length > 0 || eventsForDay.length > 0;
+
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={`
+                          min-h-[80px] md:min-h-[100px] p-2 rounded-lg border-2 transition-all
+                          ${isToday(day) ? 'border-purple-500 bg-purple-50 dark:bg-purple-950' : 'border-transparent'}
+                          ${!isSameMonth(day, currentDate) ? 'opacity-40' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}
+                        `}
+                      >
+                        <div className={`text-sm font-medium mb-1 ${isToday(day) ? 'text-purple-600 dark:text-purple-400' : ''}`}>
+                          {format(day, 'd')}
+                        </div>
+                        {hasContent && (
+                          <div className="space-y-1">
+                            {postsForDay.slice(0, 2).map((post) => (
+                              <Badge key={post.id} variant="secondary" className="text-[10px] w-full truncate bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                <Plus className="h-2 w-2 mr-1" />
+                                {post.caption.substring(0, 15)}...
+                              </Badge>
+                            ))}
+                            {remindersForDay.slice(0, 1).map((reminder) => (
+                              <Badge key={reminder.id} variant="secondary" className="text-[10px] w-full truncate bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                <Bell className="h-2 w-2 mr-1" />
+                                {reminder.title.substring(0, 12)}...
+                              </Badge>
+                            ))}
+                            {eventsForDay.slice(0, 1).map((event) => (
+                              <Badge key={event.id} variant="secondary" className="text-[10px] w-full truncate bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                <CalendarIcon className="h-2 w-2 mr-1" />
+                                {event.title.substring(0, 12)}...
+                              </Badge>
+                            ))}
+                            {(postsForDay.length > 2 || remindersForDay.length > 1 || eventsForDay.length > 1) && (
+                              <Badge variant="outline" className="text-[10px]">
+                                +{postsForDay.length + remindersForDay.length + eventsForDay.length - 4} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Side Panel - Right (1/3) */}
+          <div className="space-y-6">
+            {/* Coming Up */}
+            <Card className="backdrop-blur-sm bg-white/70 dark:bg-gray-800/70 shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Clock className="h-5 w-5" />
+                  Coming Up
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-[300px] overflow-y-auto">
+                {comingUp.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No upcoming items</p>
+                ) : (
+                  comingUp.map((item) => (
+                    <div
+                      key={`${item.type}-${item.data.id}`}
+                      className={`
+                        p-3 rounded-lg border transition-all hover:shadow-md
+                        ${item.type === 'post' ? 'border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-900' : ''}
+                        ${item.type === 'reminder' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-900' : ''}
+                        ${item.type === 'event' ? 'border-purple-200 bg-purple-50 dark:bg-purple-950 dark:border-purple-900' : ''}
+                      `}
+                    >
+                      <div className="flex items-center gap-2">
+                        {item.type === 'post' && <Plus className="h-3 w-3 text-blue-600" />}
+                        {item.type === 'reminder' && <Bell className="h-3 w-3 text-yellow-600" />}
+                        {item.type === 'event' && <CalendarIcon className="h-3 w-3 text-purple-600" />}
+                        <p className="text-sm font-medium truncate">{item.title}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(item.date, 'MMM d, h:mm a')}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Events */}
+            <Card className="backdrop-blur-sm bg-white/70 dark:bg-gray-800/70 shadow-xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <CalendarIcon className="h-5 w-5" />
+                  Events
+                </CardTitle>
+                <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="h-8">
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create Event</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={createEvent} className="space-y-4">
+                      <div>
+                        <Label htmlFor="eventTitle">Title</Label>
+                        <Input
+                          id="eventTitle"
+                          value={eventTitle}
+                          onChange={(e) => setEventTitle(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="eventDate">Date & Time</Label>
+                        <Input
+                          id="eventDate"
+                          type="datetime-local"
+                          value={eventDate}
+                          onChange={(e) => setEventDate(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="eventNote">Note (Optional)</Label>
+                        <Textarea
+                          id="eventNote"
+                          value={eventNote}
+                          onChange={(e) => setEventNote(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Create Event
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-[250px] overflow-y-auto">
+                {events.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No events</p>
+                ) : (
+                  events.map((event) => (
+                    <div key={event.id} className="flex items-start justify-between p-3 rounded-lg border border-purple-200 bg-purple-50 dark:bg-purple-950 dark:border-purple-900">
+                      <div>
+                        <p className="font-medium text-sm">{event.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(event.date), 'MMM d, h:mm a')}
+                        </p>
+                        {event.note && (
+                          <p className="text-xs text-muted-foreground mt-1">{event.note}</p>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => deleteEvent(event.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Reminders */}
+            <Card className="backdrop-blur-sm bg-white/70 dark:bg-gray-800/70 shadow-xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Bell className="h-5 w-5" />
+                  Reminders
+                </CardTitle>
+                <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="h-8">
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create Reminder</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={createReminder} className="space-y-4">
+                      <div>
+                        <Label htmlFor="reminderTitle">Title</Label>
+                        <Input
+                          id="reminderTitle"
+                          value={reminderTitle}
+                          onChange={(e) => setReminderTitle(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="reminderDate">Date & Time</Label>
+                        <Input
+                          id="reminderDate"
+                          type="datetime-local"
+                          value={reminderDate}
+                          onChange={(e) => setReminderDate(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        Create Reminder
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-[250px] overflow-y-auto">
+                {reminders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No reminders</p>
+                ) : (
+                  reminders.map((reminder) => (
+                    <div key={reminder.id} className="flex items-start justify-between p-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-900">
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          checked={reminder.completed}
+                          onCheckedChange={() => toggleReminder(reminder.id)}
+                        />
+                        <div className={reminder.completed ? "line-through text-muted-foreground" : ""}>
+                          <p className="font-medium text-sm">{reminder.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(reminder.date), 'MMM d, h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => deleteReminder(reminder.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Create Post Button */}
+            <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full h-12 text-lg shadow-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Post
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Post</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={createPost} className="space-y-4">
+                  <div>
+                    <Label htmlFor="postCaption">Caption</Label>
+                    <Textarea
+                      id="postCaption"
+                      value={postCaption}
+                      onChange={(e) => setPostCaption(e.target.value)}
+                      required
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="postMediaUrl">Media URL (Optional)</Label>
+                    <Input
+                      id="postMediaUrl"
+                      value={postMediaUrl}
+                      onChange={(e) => setPostMediaUrl(e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="postScheduledFor">Schedule For (Optional)</Label>
+                    <Input
+                      id="postScheduledFor"
+                      type="datetime-local"
+                      value={postScheduledFor}
+                      onChange={(e) => setPostScheduledFor(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Platforms</Label>
+                    <div className="flex gap-4 mt-2">
+                      {['youtube', 'instagram', 'facebook'].map((platform) => (
+                        <label key={platform} className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={postPlatforms.includes(platform)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setPostPlatforms([...postPlatforms, platform]);
+                              } else {
+                                setPostPlatforms(postPlatforms.filter(p => p !== platform));
+                              }
+                            }}
+                          />
+                          <span className="capitalize">{platform}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Create Post
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </main>
-
-      {/* Connect Platform Dialog */}
-      <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Connect {selectedPlatform?.charAt(0).toUpperCase() + selectedPlatform?.slice(1)}
-            </DialogTitle>
-            <DialogDescription>
-              Enter your account details to connect your {selectedPlatform} account.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="accountName">Account Name</Label>
-              <Input
-                id="accountName"
-                placeholder="My Awesome Channel"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="accountHandle">Account Handle</Label>
-              <Input
-                id="accountHandle"
-                placeholder="@username"
-                value={accountHandle}
-                onChange={(e) => setAccountHandle(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConnectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConnect} disabled={loading}>
-              {loading ? 'Connecting...' : 'Connect'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create/Edit Post Dialog */}
-      <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingPost ? 'Edit Post' : 'Create New Post'}</DialogTitle>
-            <DialogDescription>
-              {editingPost ? 'Update your post details.' : 'Create a new post for your social media platforms.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="postCaption">Caption</Label>
-              <Textarea
-                id="postCaption"
-                placeholder="Write your post caption..."
-                value={postCaption}
-                onChange={(e) => setPostCaption(e.target.value)}
-                rows={4}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="postMediaUrl">Media URL (Optional)</Label>
-              <Input
-                id="postMediaUrl"
-                placeholder="https://example.com/image.jpg"
-                value={postMediaUrl}
-                onChange={(e) => setPostMediaUrl(e.target.value)}
-              />
-              {postMediaUrl && (
-                <img
-                  src={postMediaUrl}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-md mt-2"
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Platforms</Label>
-              <div className="flex flex-wrap gap-2">
-                {(['youtube', 'instagram', 'facebook'] as const).map((platform) => (
-                  <Badge
-                    key={platform}
-                    variant={postPlatforms.includes(platform) ? 'default' : 'outline'}
-                    className={`cursor-pointer ${
-                      postPlatforms.includes(platform) ? getPlatformBadgeVariant(platform) : ''
-                    }`}
-                    onClick={() => togglePlatform(platform)}
-                  >
-                    {platform === 'youtube' && <Youtube className="h-3 w-3 mr-1" />}
-                    {platform === 'instagram' && <Instagram className="h-3 w-3 mr-1" />}
-                    {platform === 'facebook' && <Facebook className="h-3 w-3 mr-1" />}
-                    {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="postStatus">Status</Label>
-              <select
-                id="postStatus"
-                value={postStatus}
-                onChange={(e) => setPostStatus(e.target.value as 'draft' | 'scheduled' | 'posted')}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
-              >
-                <option value="draft">Draft</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="posted">Posted</option>
-              </select>
-            </div>
-
-            {postStatus === 'scheduled' && (
-              <div className="space-y-2">
-                <Label htmlFor="postScheduledAt">Schedule Date & Time</Label>
-                <Input
-                  id="postScheduledAt"
-                  type="datetime-local"
-                  value={postScheduledAt}
-                  onChange={(e) => setPostScheduledAt(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPostDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSavePost} disabled={loading}>
-              {loading ? 'Saving...' : editingPost ? 'Update' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </div>
     </div>
-  )
+  );
 }
