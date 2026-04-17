@@ -573,7 +573,7 @@ export default function AISocialPoster() {
             {dayEvents.slice(0, 1).map(event => (
               <div 
                 key={event.id} 
-                className="text-[10px] bg-gradient-to-r from-purple-400 to-purple-600 text-white px-2 py-0.5 rounded shadow-md truncate cursor-pointer hover:shadow-lg transition-shadow"
+                className="text-[10px] bg-gradient-to-r from-blue-400 to-blue-600 text-white px-2 py-0.5 rounded shadow-md truncate cursor-pointer hover:shadow-lg transition-shadow"
                 title={event.title}
               >
                 📅 {event.title.substring(0, 12)}...
@@ -626,7 +626,7 @@ export default function AISocialPoster() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-black dark:via-blue-950 dark:to-black">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 dark:from-black dark:via-blue-950 dark:to-black">
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="hidden md:flex w-64 flex-col bg-gradient-to-b from-white/95 to-blue-50/90 dark:from-blue-950/95 dark:to-black/95 backdrop-blur-md border-r border-blue-200/30 dark:border-blue-800/30 p-6 shadow-2xl">
@@ -635,7 +635,7 @@ export default function AISocialPoster() {
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 rounded-xl shadow-lg shadow-blue-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300">
                 <LayoutDashboard className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-black bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">
+              <span className="text-2xl font-black bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 bg-clip-text text-transparent drop-shadow-sm">
                 AI Social
               </span>
             </div>
@@ -665,7 +665,7 @@ export default function AISocialPoster() {
 
           <Separator />
 
-          <div className="pt-4 flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-blue-950/30 border border-blue-200/30 dark:border-blue-800/30">
+          <div className="pt-4 flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-950/30 border border-blue-200/30 dark:border-blue-800/30">
             <Avatar className="w-12 h-12 ring-2 ring-blue-500/30 hover:ring-blue-500/60 transition-all">
               <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
               <AvatarFallback>D</AvatarFallback>
@@ -706,10 +706,10 @@ export default function AISocialPoster() {
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-900 rounded-lg flex items-center justify-center">
                 <LayoutDashboard className="w-4 h-4 text-white" />
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">
                 AI Social
               </span>
             </div>
@@ -724,7 +724,7 @@ export default function AISocialPoster() {
             <>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Dashboard</h1>
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">Dashboard</h1>
                   <p className="text-muted-foreground font-medium">Overview of your connected social accounts & upcoming events.</p>
                 </div>
                 <Button onClick={() => setActiveView('create')} className="mt-4 md:mt-0 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300">
@@ -956,9 +956,9 @@ export default function AISocialPoster() {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-black border-none">
+                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-black border-none">
                     <CardContent className="pt-6">
-                      <Sparkles className="w-8 h-8 text-purple-600 mb-3" />
+                      <Sparkles className="w-8 h-8 text-blue-600 mb-3" />
                       <h3 className="font-semibold mb-2">✨ AI Pro Tip</h3>
                       <p className="text-sm text-muted-foreground">
                         Posts with questions get 2x more engagement! Try asking your audience something in your next post.
@@ -975,7 +975,7 @@ export default function AISocialPoster() {
             <>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Content Calendar</h1>
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-blue-900 bg-clip-text text-transparent">Content Calendar</h1>
                   <p className="text-muted-foreground font-medium">Plan your monthly strategy.</p>
                 </div>
                 <div className="flex items-center gap-2 mt-4 md:mt-0">
@@ -1006,7 +1006,7 @@ export default function AISocialPoster() {
                   {/* Calendar Header */}
                   <div className="grid grid-cols-7 gap-2 mb-4">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                      <div key={day} className="text-center text-sm font-black text-muted-foreground py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-950 rounded-lg">
+                      <div key={day} className="text-center text-sm font-black text-muted-foreground py-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-950 rounded-lg">
                         {day}
                       </div>
                     ))}
@@ -1021,17 +1021,17 @@ export default function AISocialPoster() {
               {/* Upcoming Events, Reminders, and Posts */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 {/* Upcoming Events */}
-                <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                <Card className="border-2 border-blue-200/50 dark:border-blue-800/50 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <CardTitle className="text-lg font-black flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-md shadow-purple-500/30 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-md shadow-blue-500/30 flex items-center justify-center">
                         <CalendarDays className="w-4 h-4 text-white" />
                       </div>
                       Upcoming Events
                     </CardTitle>
                     <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all">
+                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all">
                           <Plus className="w-4 h-4" />
                         </Button>
                       </DialogTrigger>
@@ -1071,7 +1071,7 @@ export default function AISocialPoster() {
                               className="mt-2"
                             />
                           </div>
-                          <Button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg">
+                          <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg">
                             Create Event
                           </Button>
                         </form>
@@ -1081,12 +1081,12 @@ export default function AISocialPoster() {
                   <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
                     {upcomingEvents.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30 text-blue-500" />
                         <p className="font-medium">No upcoming events</p>
                       </div>
                     ) : (
                       upcomingEvents.map((event) => (
-                        <div key={event.id} className="p-3 rounded-xl bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-950/50 border border-purple-200/30 dark:border-purple-800/30 hover:shadow-md transition-all">
+                        <div key={event.id} className="p-3 rounded-xl bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50 border border-blue-200/30 dark:border-blue-800/30 hover:shadow-md transition-all">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
                               <p className="font-bold text-sm mb-1">{event.title}</p>
@@ -1157,7 +1157,7 @@ export default function AISocialPoster() {
                   <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
                     {upcomingReminders.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <Bell className="w-12 h-12 mx-auto mb-3 opacity-30 text-yellow-500" />
                         <p className="font-medium">No reminders</p>
                       </div>
                     ) : (
@@ -1199,7 +1199,7 @@ export default function AISocialPoster() {
                   <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
                     {upcomingPosts.length === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-30 text-blue-500" />
                         <p className="font-medium">No scheduled posts</p>
                       </div>
                     ) : (
@@ -1235,7 +1235,7 @@ export default function AISocialPoster() {
                   <div className="flex flex-col gap-3 mt-4">
                     <Button 
                       onClick={openEventDialogFromDate}
-                      className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all"
                     >
                       <CalendarDays className="w-5 h-5 mr-2" />
                       Add Event
