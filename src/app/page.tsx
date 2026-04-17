@@ -1505,6 +1505,196 @@ export default function AISocialPoster() {
               </Card>
             </>
           )}
+
+          {/* YouTube Analytics View */}
+          {activeView === 'youtube' && (
+            <>
+              <div className="flex items-center gap-4 mb-6">
+                <Button
+                  onClick={() => setActiveView('dashboard')}
+                  variant="outline"
+                  className="rounded-xl hover:shadow-lg transition-all"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">YouTube Analytics</h1>
+                  <p className="text-muted-foreground font-medium">Track your channel performance & growth.</p>
+                </div>
+              </div>
+
+              {/* Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-red-200/30 dark:border-red-800/30 bg-gradient-to-br from-white to-red-50/50 dark:from-red-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Youtube className="w-8 h-8 mx-auto mb-3 text-red-600 dark:text-red-400" />
+                    <p className="text-3xl font-black mb-1">{youtubeAnalytics.subscribers}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Subscribers</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-red-200/30 dark:border-red-800/30 bg-gradient-to-br from-white to-red-50/50 dark:from-red-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Eye className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
+                    <p className="text-3xl font-black mb-1">{youtubeAnalytics.totalViews}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Total Views</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-red-200/30 dark:border-red-800/30 bg-gradient-to-br from-white to-red-50/50 dark:from-red-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Play className="w-8 h-8 mx-auto mb-3 text-green-600 dark:text-green-400" />
+                    <p className="text-3xl font-black mb-1">{youtubeAnalytics.totalVideos}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Videos</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-red-200/30 dark:border-red-800/30 bg-gradient-to-br from-white to-red-50/50 dark:from-red-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400" />
+                    <p className="text-3xl font-black mb-1">{youtubeAnalytics.engagementRate}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Engagement Rate</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <Card className="col-span-1 md:col-span-3 border-2 border-blue-200/30 dark:border-blue-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      Views Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={youtubeAnalytics.viewsTrend}>
+                        <defs>
+                          <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Area type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} fill="url(#viewsGradient)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-green-200/30 dark:border-green-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <ThumbsUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      Likes Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={youtubeAnalytics.likesTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(34, 197, 94, 0.9)',
+                            border: '1px solid #22c55e',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Bar dataKey="likes" fill="#22c55e" radius={[8, 8, 8, 8, 8]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-purple-200/30 dark:border-purple-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      Comments Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={youtubeAnalytics.commentsTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(147, 51, 234, 0.9)',
+                            border: '1px solid #9333ea',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Line type="monotone" dataKey="comments" stroke="#9333ea" strokeWidth={2} dot={{ fill: '#9333ea', r: 4 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Uploads */}
+              <Card className="border-2 border-red-200/30 dark:border-red-800/30 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-black flex items-center gap-2">
+                    <Youtube className="w-6 h-6 text-red-600 dark:text-red-400" />
+                    Recent 5 Uploads
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {youtubeVideos.map((video) => (
+                      <div
+                        key={video.id}
+                        className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-red-50/30 to-white dark:from-red-950/30 dark:to-black/30 border border-red-200/30 dark:border-red-800/30 hover:shadow-lg transition-all"
+                      >
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-32 h-20 object-cover rounded-lg shadow-md flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-bold text-sm line-clamp-2 pr-4">{video.title}</h3>
+                            <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(video.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-xs">
+                              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                              <span className="font-semibold">{video.views}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <span className="font-semibold">{video.likes}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                              <span className="font-semibold">{video.comments}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </main>
       </div>
     </div>
