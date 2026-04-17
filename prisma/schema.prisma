@@ -41,21 +41,3 @@ model PlatformConnection {
 
   @@unique([platform])
 }
-
-model Reminder {
-  id        String   @id @default(cuid())
-  title     String
-  date      DateTime
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Event {
-  id        String   @id @default(cuid())
-  title     String
-  date      DateTime
-  note      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
