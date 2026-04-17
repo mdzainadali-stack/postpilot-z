@@ -1225,10 +1225,10 @@ export default function AISocialPoster() {
                       </Button>
                     </div>
 
-                  {/* CALENDAR LAYOUT - Proper Calendar App Style */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-                    {/* Left: Calendar */}
-                    <div className="xl:col-span-2 space-y-3 sm:space-y-4">
+                  {/* CALENDAR LAYOUT - Normal Calendar App Style */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {/* Left: Calendar Grid */}
+                    <div className="lg:col-span-2">
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
                         <CardContent className="p-3 sm:p-4 md:p-6 pt-3 sm:pt-4 md:pt-6">
                           {/* Calendar Header - Days */}
@@ -1265,36 +1265,86 @@ export default function AISocialPoster() {
                           </div>
                         </CardContent>
                       </Card>
+                    </div>
 
-                      {/* EVENTS LIST CARD */}
+                    {/* Right: Side Panel with Events, Reminders, and Upcoming */}
+                    <div className="space-y-3 sm:space-y-4">
+                      {/* Coming Up Section */}
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
-                        <CardHeader className="p-3 sm:p-4 flex flex-row items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <List className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>All Events</CardTitle>
-                          </div>
+                        <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3">
+                          <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${theme === 'dark' ? 'text-white' : ''}`}>
+                            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Coming Up
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3 sm:p-4 pt-2 sm:pt-3">
+                          {upcomingEventsList.length === 0 ? (
+                            <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
+                              No upcoming events.
+                            </p>
+                          ) : (
+                            <ScrollArea className="max-h-[200px] sm:max-h-[250px]">
+                              <div className="space-y-2">
+                                {upcomingEventsList.map((event) => (
+                                  <div 
+                                    key={event.id}
+                                    className={`p-2 sm:p-2.5 rounded-lg border bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800`}
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-[10px] sm:text-xs font-semibold ${theme === 'dark' ? 'text-gray-200' : ''} mb-0.5`}>
+                                        {event.title}
+                                      </p>
+                                      <p className={`text-[9px] sm:text-[10px] ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
+                                        {new Date(event.date).toLocaleDateString('en-US', {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </p>
+                                      {event.note && (
+                                        <p className={`text-[9px] sm:text-[10px] mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
+                                          {event.note}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Events List Section */}
+                      <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
+                        <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3 flex flex-row items-center justify-between">
+                          <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${theme === 'dark' ? 'text-white' : ''}`}>
+                            <List className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Events
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 sm:p-4 pt-2 sm:pt-3">
                           {events.length === 0 ? (
-                            <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-4 sm:py-6`}>
-                              No events yet. Add your first event!
+                            <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-3 sm:py-4`}>
+                              No events yet.
                             </p>
                           ) : (
-                            <ScrollArea className="max-h-[200px] sm:max-h-[300px]">
-                              <div className="space-y-2 sm:space-y-3">
+                            <ScrollArea className="max-h-[200px] sm:max-h-[250px]">
+                              <div className="space-y-2">
                                 {events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
                                   <div 
                                     key={event.id}
-                                    className={`p-2.5 sm:p-3 rounded-lg border ${
+                                    className={`p-2 sm:p-2.5 rounded-lg border ${
                                       theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-muted/50'
                                     }`}
                                   >
-                                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                    <div className="flex items-start justify-between gap-2">
                                       <div className="flex-1 min-w-0">
-                                        <p className={`text-xs sm:text-sm font-medium ${theme === 'dark' ? 'text-white' : ''} mb-1`}>
+                                        <p className={`text-[10px] sm:text-xs font-medium ${theme === 'dark' ? 'text-white' : ''} mb-0.5`}>
                                           {event.title}
                                         </p>
-                                        <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                                        <p className={`text-[9px] sm:text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
                                           {new Date(event.date).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
@@ -1303,16 +1353,16 @@ export default function AISocialPoster() {
                                           })}
                                         </p>
                                         {event.note && (
-                                          <p className={`text-[10px] sm:text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
+                                          <p className={`text-[9px] sm:text-[10px] mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
                                             {event.note}
                                           </p>
                                         )}
                                       </div>
                                       <button
                                         onClick={() => deleteEvent(event.id)}
-                                        className={`p-1.5 sm:p-2 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1 sm:p-1.5 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                                       >
-                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                       </button>
                                     </div>
                                   </div>
@@ -1323,50 +1373,50 @@ export default function AISocialPoster() {
                         </CardContent>
                       </Card>
 
-                      {/* REMINDERS LIST CARD */}
+                      {/* Reminders List Section */}
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
-                        <CardHeader className="p-3 sm:p-4 flex flex-row items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>All Reminders</CardTitle>
-                          </div>
+                        <CardHeader className="p-3 sm:p-4 pb-2 sm:pb-3 flex flex-row items-center justify-between">
+                          <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${theme === 'dark' ? 'text-white' : ''}`}>
+                            <CalendarCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Reminders
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 sm:p-4 pt-2 sm:pt-3">
                           {reminders.length === 0 ? (
-                            <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-4 sm:py-6`}>
-                              No reminders yet. Add your first reminder!
+                            <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-3 sm:py-4`}>
+                              No reminders yet.
                             </p>
                           ) : (
-                            <ScrollArea className="max-h-[200px] sm:max-h-[300px]">
-                              <div className="space-y-2 sm:space-y-3">
+                            <ScrollArea className="max-h-[200px] sm:max-h-[250px]">
+                              <div className="space-y-2">
                                 {reminders.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((reminder) => (
                                   <div 
                                     key={reminder.id}
-                                    className={`p-2.5 sm:p-3 rounded-lg border ${
+                                    className={`p-2 sm:p-2.5 rounded-lg border ${
                                       reminder.completed 
                                         ? 'opacity-60' 
                                         : ''
                                     } ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-muted/50'
                                     }`}
                                   >
-                                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                    <div className="flex items-start justify-between gap-2">
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-1.5 mb-0.5">
                                           <button
                                             onClick={() => toggleReminder(reminder.id, reminder.completed)}
-                                            className={`p-1 rounded hover:bg-white/10 ${
+                                            className={`p-0.5 sm:p-1 rounded hover:bg-white/10 ${
                                               reminder.completed
                                                 ? 'bg-green-600 text-white'
                                                 : theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'
                                             }`}
                                           >
-                                            <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                                            <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
                                           </button>
-                                          <p className={`text-xs sm:text-sm font-medium ${reminder.completed ? 'line-through' : ''} ${theme === 'dark' ? 'text-white' : ''}`}>
+                                          <p className={`text-[10px] sm:text-xs font-medium ${reminder.completed ? 'line-through' : ''} ${theme === 'dark' ? 'text-white' : ''}`}>
                                             {reminder.title}
                                           </p>
                                         </div>
-                                        <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                                        <p className={`text-[9px] sm:text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
                                           {new Date(reminder.date).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
@@ -1377,64 +1427,15 @@ export default function AISocialPoster() {
                                       </div>
                                       <button
                                         onClick={() => deleteReminder(reminder.id)}
-                                        className={`p-1.5 sm:p-2 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`p-1 sm:p-1.5 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                                       >
-                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                       </button>
                                     </div>
                                   </div>
                                 ))}
                               </div>
                             </ScrollArea>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Right: Upcoming Events Sidebar */}
-                    <div className="space-y-3 sm:space-y-6 hidden xl:block">
-                      <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
-                        <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
-                          <CardTitle className={`text-base sm:text-lg flex items-center gap-2 ${theme === 'dark' ? 'text-white' : ''}`}>
-                            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                            Coming Up
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-3 sm:p-4 md:p-6 pt-2 sm:pt-3">
-                          {upcomingEventsList.length === 0 ? (
-                            <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
-                              No upcoming events.
-                            </p>
-                          ) : (
-                            <div className="space-y-2 sm:space-y-3">
-                              {upcomingEventsList.map((event) => (
-                                <div 
-                                  key={event.id}
-                                  className={`p-2.5 sm:p-3 rounded-lg border bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800`}
-                                >
-                                  <div className="flex items-start justify-between gap-1.5 sm:gap-2">
-                                    <div className="flex-1 min-w-0">
-                                      <p className={`text-[10px] sm:text-xs font-semibold ${theme === 'dark' ? 'text-gray-200' : ''} mb-1`}>
-                                        {event.title}
-                                      </p>
-                                      <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
-                                        {new Date(event.date).toLocaleDateString('en-US', {
-                                          month: 'short',
-                                          day: 'numeric',
-                                          hour: '2-digit',
-                                          minute: '2-digit'
-                                        })}
-                                      </p>
-                                      {event.note && (
-                                        <p className={`text-[10px] sm:text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
-                                          {event.note}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
                           )}
                         </CardContent>
                       </Card>
