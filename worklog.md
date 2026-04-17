@@ -101,3 +101,35 @@ Stage Summary:
 - Calendar upgraded with better design and features
 - Smooth animations and hover effects throughout
 - Production-ready application with all requested features
+
+---
+
+Task ID: 2-a
+Agent: Task
+Task: Refactor calendar page layout
+
+Work Log:
+- Removed "Upcoming Events, Reminders, and Posts" section from Dashboard view (previously lines 789-993)
+- Added "Upcoming Events", "Upcoming Reminders", and "Scheduled Posts" cards to Calendar view
+- Positioned upcoming sections after the calendar grid with proper spacing (mt-6)
+- Added Date Click Dialog component that opens when clicking on calendar dates
+- Implemented dialog with three buttons: "Add Event", "Add Reminder", and "Cancel"
+- Added selected date display at top of dialog using date-fns format function
+- "Add Event" button calls openEventDialogFromDate() which pre-fills eventDate with selected date
+- "Add Reminder" button calls openReminderDialogFromDate() which pre-fills reminderDate with selected date
+- "Cancel" button calls closeDateClickDialog() which clears selectedDate and closes dialog
+- Verified createReminder() function already includes setDateClickDialogOpen(false) and setSelectedDate(null)
+- Verified createEvent() function already includes setDateClickDialogOpen(false) and setSelectedDate(null)
+- All existing functionality maintained intact
+- Maintained 3D styling and blue/black dark theme throughout
+- Ran ESLint - no errors
+- Verified app compilation - ✓ Compiled successfully
+- Dev server shows successful page loads and API calls working correctly
+
+Stage Summary:
+- Successfully refactored page layout: moved upcoming sections from Dashboard to Calendar view
+- Calendar view now displays full upcoming events, reminders, and scheduled posts list
+- Date Click Dialog implemented for easy event/reminder creation from calendar
+- Pre-filling dates from calendar selection improves user experience
+- All existing features working correctly
+- Clean separation of concerns: Dashboard shows overview, Calendar shows planning details

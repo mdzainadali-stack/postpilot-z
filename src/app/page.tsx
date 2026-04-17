@@ -134,6 +134,8 @@ export default function AISocialPoster() {
   // Dialog states
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false)
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
+  const [dateClickDialogOpen, setDateClickDialogOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [reminderTitle, setReminderTitle] = useState('')
   const [reminderDate, setReminderDate] = useState('')
   const [eventTitle, setEventTitle] = useState('')
@@ -371,6 +373,8 @@ export default function AISocialPoster() {
         setReminderTitle('')
         setReminderDate('')
         setReminderDialogOpen(false)
+        setDateClickDialogOpen(false)
+        setSelectedDate(null)
         toast({
           title: 'Reminder Created!',
           description: 'Your reminder has been added.',
@@ -438,6 +442,8 @@ export default function AISocialPoster() {
         setEventDate('')
         setEventNote('')
         setEventDialogOpen(false)
+        setDateClickDialogOpen(false)
+        setSelectedDate(null)
         toast({
           title: 'Event Created!',
           description: 'Your event has been added.',
@@ -475,6 +481,34 @@ export default function AISocialPoster() {
     })
   }
 
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date)
+    setDateClickDialogOpen(true)
+  }
+
+  const openEventDialogFromDate = () => {
+    setDateClickDialogOpen(false)
+    if (selectedDate) {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd'T'HH:mm")
+      setEventDate(formattedDate)
+      setEventDialogOpen(true)
+    }
+  }
+
+  const openReminderDialogFromDate = () => {
+    setDateClickDialogOpen(false)
+    if (selectedDate) {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd'T'HH:mm")
+      setReminderDate(formattedDate)
+      setReminderDialogOpen(true)
+    }
+  }
+
+  const closeDateClickDialog = () => {
+    setDateClickDialogOpen(false)
+    setSelectedDate(null)
+  }
+
   const renderCalendarDays = () => {
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(currentMonth)
@@ -503,13 +537,14 @@ export default function AISocialPoster() {
       return (
         <div
           key={day.toISOString()}
+          onClick={() => isCurrentMonth && handleDateClick(day)}
           className={`
-            min-h-[90px] md:min-h-[110px] p-2 rounded-xl border-2 transition-all duration-300
+            min-h-[90px] md:min-h-[110px] p-2 rounded-xl border-2 transition-all duration-300 cursor-pointer
             ${isDayToday 
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-lg shadow-blue-500/20' 
               : isCurrentMonth
               ? 'border-blue-200/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50 dark:border-blue-800/30 hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10 hover:scale-105'
-              : 'opacity-40 bg-muted/10'
+              : 'opacity-40 bg-muted/10 cursor-default'
             }
           `}
         >
@@ -750,212 +785,6 @@ export default function AISocialPoster() {
                   </Card>
                 ))}
               </div>
-
-              {/* Upcoming Events, Reminders, and Posts */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Upcoming Events */}
-                <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-lg font-black flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-md shadow-purple-500/30 flex items-center justify-center">
-                        <CalendarDays className="w-4 h-4 text-white" />
-                      </div>
-                      Upcoming Events
-                    </CardTitle>
-                    <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all">
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-bold">Create Event</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={createEvent} className="space-y-4">
-                          <div>
-                            <Label htmlFor="eventTitle">Event Title</Label>
-                            <Input
-                              id="eventTitle"
-                              value={eventTitle}
-                              onChange={(e) => setEventTitle(e.target.value)}
-                              required
-                              className="mt-2"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="eventDate">Date & Time</Label>
-                            <Input
-                              id="eventDate"
-                              type="datetime-local"
-                              value={eventDate}
-                              onChange={(e) => setEventDate(e.target.value)}
-                              required
-                              className="mt-2"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="eventNote">Note (Optional)</Label>
-                            <Textarea
-                              id="eventNote"
-                              value={eventNote}
-                              onChange={(e) => setEventNote(e.target.value)}
-                              rows={3}
-                              className="mt-2"
-                            />
-                          </div>
-                          <Button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg">
-                            Create Event
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </CardHeader>
-                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {upcomingEvents.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">No upcoming events</p>
-                      </div>
-                    ) : (
-                      upcomingEvents.map((event) => (
-                        <div key={event.id} className="p-3 rounded-xl bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-950/50 border border-purple-200/30 dark:border-purple-800/30 hover:shadow-md transition-all">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <p className="font-bold text-sm mb-1">{event.title}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {format(new Date(event.date), 'MMM d, h:mm a')}
-                              </p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => deleteEvent(event.id)} className="h-8 w-8 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
-                              <Trash2 className="w-4 h-4 text-red-500" />
-                            </Button>
-                          </div>
-                          {event.note && <p className="text-xs text-muted-foreground">{event.note}</p>}
-                        </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Upcoming Reminders */}
-                <Card className="border-2 border-yellow-200/50 dark:border-yellow-800/50 bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-lg font-black flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-md shadow-yellow-500/30 flex items-center justify-center">
-                        <Bell className="w-4 h-4 text-white" />
-                      </div>
-                      Reminders
-                    </CardTitle>
-                    <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-md hover:shadow-lg transition-all">
-                          <Plus className="w-4 h-4 text-black" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-bold">Create Reminder</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={createReminder} className="space-y-4">
-                          <div>
-                            <Label htmlFor="reminderTitle">Reminder Title</Label>
-                            <Input
-                              id="reminderTitle"
-                              value={reminderTitle}
-                              onChange={(e) => setReminderTitle(e.target.value)}
-                              required
-                              className="mt-2"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="reminderDate">Date & Time</Label>
-                            <Input
-                              id="reminderDate"
-                              type="datetime-local"
-                              value={reminderDate}
-                              onChange={(e) => setReminderDate(e.target.value)}
-                              required
-                              className="mt-2"
-                            />
-                          </div>
-                          <Button type="submit" className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-lg">
-                            Create Reminder
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </CardHeader>
-                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {upcomingReminders.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">No reminders</p>
-                      </div>
-                    ) : (
-                      upcomingReminders.map((reminder) => (
-                        <div key={reminder.id} className={`flex items-start justify-between p-3 rounded-xl border transition-all ${reminder.completed ? 'opacity-60 bg-muted/30 dark:bg-muted/10' : 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/50 dark:to-yellow-950/50 border-yellow-200/30 dark:border-yellow-800/30 hover:shadow-md'}`}>
-                          <div className="flex items-start gap-2 flex-1">
-                            <Checkbox
-                              checked={reminder.completed}
-                              onCheckedChange={() => toggleReminder(reminder.id)}
-                              className="mt-1"
-                            />
-                            <div className={reminder.completed ? "line-through text-muted-foreground" : ""}>
-                              <p className="font-bold text-sm mb-1">{reminder.title}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {format(new Date(reminder.date), 'MMM d, h:mm a')}
-                              </p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => deleteReminder(reminder.id)} className="h-8 w-8 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Upcoming Posts */}
-                <Card className="border-2 border-blue-200/50 dark:border-blue-800/50 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-lg font-black flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md shadow-blue-500/30 flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-white" />
-                      </div>
-                      Scheduled Posts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {upcomingPosts.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                        <p className="font-medium">No scheduled posts</p>
-                      </div>
-                    ) : (
-                      upcomingPosts.map((post) => (
-                        <div key={post.id} className="p-3 rounded-xl bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50 border border-blue-200/30 dark:border-blue-800/30 hover:shadow-md transition-all">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <p className="font-bold text-sm mb-1 line-clamp-2">{post.caption}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {post.scheduledAt && format(new Date(post.scheduledAt), 'MMM d, h:mm a')}
-                              </p>
-                            </div>
-                            <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold">
-                              {post.status.toUpperCase()}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
             </>
           )}
 
@@ -1188,6 +1017,246 @@ export default function AISocialPoster() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Upcoming Events, Reminders, and Posts */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                {/* Upcoming Events */}
+                <Card className="border-2 border-purple-200/50 dark:border-purple-800/50 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-md shadow-purple-500/30 flex items-center justify-center">
+                        <CalendarDays className="w-4 h-4 text-white" />
+                      </div>
+                      Upcoming Events
+                    </CardTitle>
+                    <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold">Create Event</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={createEvent} className="space-y-4">
+                          <div>
+                            <Label htmlFor="eventTitle">Event Title</Label>
+                            <Input
+                              id="eventTitle"
+                              value={eventTitle}
+                              onChange={(e) => setEventTitle(e.target.value)}
+                              required
+                              className="mt-2"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="eventDate">Date & Time</Label>
+                            <Input
+                              id="eventDate"
+                              type="datetime-local"
+                              value={eventDate}
+                              onChange={(e) => setEventDate(e.target.value)}
+                              required
+                              className="mt-2"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="eventNote">Note (Optional)</Label>
+                            <Textarea
+                              id="eventNote"
+                              value={eventNote}
+                              onChange={(e) => setEventNote(e.target.value)}
+                              rows={3}
+                              className="mt-2"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg">
+                            Create Event
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {upcomingEvents.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="font-medium">No upcoming events</p>
+                      </div>
+                    ) : (
+                      upcomingEvents.map((event) => (
+                        <div key={event.id} className="p-3 rounded-xl bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/50 dark:to-purple-950/50 border border-purple-200/30 dark:border-purple-800/30 hover:shadow-md transition-all">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <p className="font-bold text-sm mb-1">{event.title}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(new Date(event.date), 'MMM d, h:mm a')}
+                              </p>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => deleteEvent(event.id)} className="h-8 w-8 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                          {event.note && <p className="text-xs text-muted-foreground">{event.note}</p>}
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Upcoming Reminders */}
+                <Card className="border-2 border-yellow-200/50 dark:border-yellow-800/50 bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-md shadow-yellow-500/30 flex items-center justify-center">
+                        <Bell className="w-4 h-4 text-white" />
+                      </div>
+                      Reminders
+                    </CardTitle>
+                    <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="h-8 w-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-md hover:shadow-lg transition-all">
+                          <Plus className="w-4 h-4 text-black" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold">Create Reminder</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={createReminder} className="space-y-4">
+                          <div>
+                            <Label htmlFor="reminderTitle">Reminder Title</Label>
+                            <Input
+                              id="reminderTitle"
+                              value={reminderTitle}
+                              onChange={(e) => setReminderTitle(e.target.value)}
+                              required
+                              className="mt-2"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="reminderDate">Date & Time</Label>
+                            <Input
+                              id="reminderDate"
+                              type="datetime-local"
+                              value={reminderDate}
+                              onChange={(e) => setReminderDate(e.target.value)}
+                              required
+                              className="mt-2"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-lg">
+                            Create Reminder
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {upcomingReminders.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="font-medium">No reminders</p>
+                      </div>
+                    ) : (
+                      upcomingReminders.map((reminder) => (
+                        <div key={reminder.id} className={`flex items-start justify-between p-3 rounded-xl border transition-all ${reminder.completed ? 'opacity-60 bg-muted/30 dark:bg-muted/10' : 'bg-gradient-to-r from-yellow-100 to-yellow-50 dark:from-yellow-900/50 dark:to-yellow-950/50 border-yellow-200/30 dark:border-yellow-800/30 hover:shadow-md'}`}>
+                          <div className="flex items-start gap-2 flex-1">
+                            <Checkbox
+                              checked={reminder.completed}
+                              onCheckedChange={() => toggleReminder(reminder.id)}
+                              className="mt-1"
+                            />
+                            <div className={reminder.completed ? "line-through text-muted-foreground" : ""}>
+                              <p className="font-bold text-sm mb-1">{reminder.title}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(new Date(reminder.date), 'MMM d, h:mm a')}
+                              </p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => deleteReminder(reminder.id)} className="h-8 w-8 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Upcoming Posts */}
+                <Card className="border-2 border-blue-200/50 dark:border-blue-800/50 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/50 dark:to-blue-950/50 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md shadow-blue-500/30 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-white" />
+                      </div>
+                      Scheduled Posts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {upcomingPosts.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p className="font-medium">No scheduled posts</p>
+                      </div>
+                    ) : (
+                      upcomingPosts.map((post) => (
+                        <div key={post.id} className="p-3 rounded-xl bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-950/50 border border-blue-200/30 dark:border-blue-800/30 hover:shadow-md transition-all">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <p className="font-bold text-sm mb-1 line-clamp-2">{post.caption}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {post.scheduledAt && format(new Date(post.scheduledAt), 'MMM d, h:mm a')}
+                              </p>
+                            </div>
+                            <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold">
+                              {post.status.toUpperCase()}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Date Click Dialog */}
+              <Dialog open={dateClickDialogOpen} onOpenChange={setDateClickDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-center">
+                      {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-3 mt-4">
+                    <Button 
+                      onClick={openEventDialogFromDate}
+                      className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <CalendarDays className="w-5 h-5 mr-2" />
+                      Add Event
+                    </Button>
+                    <Button 
+                      onClick={openReminderDialogFromDate}
+                      className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <Bell className="w-5 h-5 mr-2" />
+                      Add Reminder
+                    </Button>
+                    <Button 
+                      onClick={closeDateClickDialog}
+                      variant="outline"
+                      className="w-full border-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
           )}
 
