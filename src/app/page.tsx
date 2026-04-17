@@ -1224,6 +1224,7 @@ export default function AISocialPoster() {
                         <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
+                  </div>
 
                   {/* CALENDAR LAYOUT - Normal Calendar App Style */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
