@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SocialPost {
+  id          String   @id @default(cuid())
+  caption     String
+  mediaUrl    String?
+  mediaType   String?  // 'image' or 'video'
+  platforms   String   // JSON array of platforms (youtube, instagram, facebook)
+  status      String   @default("draft") // draft, scheduled, posted, failed
+  scheduledAt DateTime?
+  postedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PlatformConnection {
+  id        String   @id @default(cuid())
+  platform  String   // youtube, instagram, facebook
+  connected Boolean  @default(false)
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([platform])
+}
