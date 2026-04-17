@@ -17,7 +17,8 @@ import {
   X,
   CheckCircle2,
   Clock,
-  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
   Bell,
   CalendarDays,
   Trash2,
@@ -25,7 +26,8 @@ import {
   Moon,
   Check,
   Menu,
-  X as CloseIcon
+  List,
+  CalendarCheck
 } from 'lucide-react'
 import { 
   Card, 
@@ -67,6 +69,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface Post {
   id: string
@@ -148,6 +151,7 @@ export default function AISocialPoster() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false)
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [calendarViewTab, setCalendarViewTab] = useState('calendar')
 
   const { toast } = useToast()
 
@@ -272,7 +276,6 @@ export default function AISocialPoster() {
         const data = await response.json()
         setPosts(prev => [data.post, ...prev])
         
-        // Reset form
         setCaption('')
         setMediaPreview(null)
         setScheduleDate('')
@@ -510,18 +513,13 @@ export default function AISocialPoster() {
     const month = currentMonth.getMonth()
     const clickedDate = new Date(year, month, day)
     
-    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
     const formattedDate = new Date(clickedDate.getTime() - clickedDate.getTimezoneOffset() * 60000)
       .toISOString()
       .slice(0, 16)
     
     setSelectedDate(clickedDate)
-    
-    // Pre-fill dates in dialogs
     setReminderDate(formattedDate)
     setEventDate(formattedDate)
-    
-    // Show reminder dialog by default (user can switch to event)
     setReminderDialogOpen(true)
   }
 
@@ -538,19 +536,21 @@ export default function AISocialPoster() {
     const month = currentMonth.getMonth()
     const firstDay = new Date(year, month, 1).getDay()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const today = new Date()
 
     const days = []
 
-    // Empty cells for days before first day of month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-12 sm:h-14 md:h-16 bg-muted/10 rounded-md" />)
+      days.push(<div key={`empty-${i}`} className="h-12 sm:h-14 md:h-20 lg:h-24 bg-muted/5 rounded-md" />)
     }
 
-    // Days of month - RESPONSIVE SIZE
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day)
+      const isToday = 
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
       
-      // Get posts for this day
       const dayPosts = posts.filter(post => {
         const postDate = post.scheduledAt || post.postedAt || post.createdAt
         const postDateObj = new Date(postDate)
@@ -561,7 +561,6 @@ export default function AISocialPoster() {
         )
       })
 
-      // Get reminders for this day
       const dayReminders = reminders.filter(r => {
         const rDate = new Date(r.date)
         return (
@@ -571,7 +570,6 @@ export default function AISocialPoster() {
         )
       })
 
-      // Get events for this day
       const dayEvents = events.filter(e => {
         const eDate = new Date(e.date)
         return (
@@ -581,53 +579,46 @@ export default function AISocialPoster() {
         )
       })
 
-      const hasItems = dayPosts.length > 0 || dayReminders.length > 0 || dayEvents.length > 0
       const totalItems = dayPosts.length + dayReminders.length + dayEvents.length
 
       days.push(
         <div 
           key={day} 
           onClick={() => handleDateClick(day)}
-          className={`h-12 sm:h-14 md:h-16 bg-muted/10 rounded-md p-1 sm:p-1.5 border border-border hover:bg-muted/30 hover:border-blue-400 transition-all cursor-pointer relative ${hasItems ? 'ring-1 ring-blue-500/30' : ''}`}
+          className={`h-12 sm:h-14 md:h-20 lg:h-24 bg-muted/5 rounded-lg border ${
+            isToday 
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-400' 
+              : 'border-border hover:border-blue-400 hover:bg-muted/20'
+          } p-1 sm:p-1.5 md:p-2 cursor-pointer transition-all relative`}
         >
-          <div className="text-xs sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">{day}</div>
-          <div className="space-y-0.5">
-            {totalItems > 0 && (
-              <>
-                {/* Show first item */}
-                {dayPosts.length > 0 && (
-                  <div 
-                    className="text-[8px] sm:text-[10px] bg-blue-500 text-white px-0.5 sm:px-1 py-0.5 rounded truncate"
-                    title={dayPosts[0].caption}
-                  >
-                    {dayPosts[0].caption.substring(0, 8)}...
-                  </div>
-                )}
-                {dayPosts.length === 0 && dayReminders.length > 0 && (
-                  <div 
-                    className="text-[8px] sm:text-[10px] bg-yellow-500 text-white px-0.5 sm:px-1 py-0.5 rounded truncate"
-                    title={dayReminders[0].title}
-                  >
-                    {dayReminders[0].title.substring(0, 8)}...
-                  </div>
-                )}
-                {dayPosts.length === 0 && dayReminders.length === 0 && dayEvents.length > 0 && (
-                  <div 
-                    className="text-[8px] sm:text-[10px] bg-purple-500 text-white px-0.5 sm:px-1 py-0.5 rounded truncate"
-                    title={dayEvents[0].title}
-                  >
-                    {dayEvents[0].title.substring(0, 8)}...
-                  </div>
-                )}
-                {/* Show count if more than 1 */}
-                {totalItems > 1 && (
-                  <div className="text-[8px] sm:text-[10px] text-muted-foreground">
-                    +{totalItems - 1}
-                  </div>
-                )}
-              </>
-            )}
+          <div className={`text-xs sm:text-sm md:text-base font-semibold ${isToday ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'} mb-1`}>
+            {day}
           </div>
+          {totalItems > 0 && (
+            <div className="flex flex-wrap gap-0.5">
+              {dayPosts.map(post => (
+                <div 
+                  key={post.id}
+                  className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"
+                  title={post.caption.substring(0, 30)}
+                />
+              ))}
+              {dayReminders.map(r => (
+                <div 
+                  key={r.id}
+                  className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-500 rounded-full"
+                  title={r.title}
+                />
+              ))}
+              {dayEvents.map(e => (
+                <div 
+                  key={e.id}
+                  className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full"
+                  title={e.title}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )
     }
@@ -635,30 +626,13 @@ export default function AISocialPoster() {
     return days
   }
 
-  const getUpcomingItems = () => {
+  const getUpcomingEvents = () => {
     const now = new Date()
-    const upcoming = []
-    
-    // Get upcoming reminders (not completed)
-    reminders.filter(r => !r.completed && new Date(r.date) >= now).forEach(r => {
-      upcoming.push({ type: 'reminder', data: r })
-    })
-    
-    // Get upcoming events
-    events.filter(e => new Date(e.date) >= now).forEach(e => {
-      upcoming.push({ type: 'event', data: e })
-    })
-    
-    // Get upcoming scheduled posts
-    posts.filter(p => p.status === 'scheduled' && new Date(p.scheduledAt || '') >= now).forEach(p => {
-      upcoming.push({ type: 'post', data: p })
-    })
-    
-    // Sort by date
-    return upcoming.sort((a, b) => 
-      new Date(a.data.date || a.data.scheduledAt || a.data.createdAt).getTime() - 
-      new Date(b.data.date || b.data.scheduledAt || b.data.createdAt).getTime()
-    ).slice(0, 5)
+    const upcoming = events
+      .filter(e => new Date(e.date) >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 5)
+    return upcoming
   }
 
   const getStatusBadge = (status: string) => {
@@ -676,7 +650,7 @@ export default function AISocialPoster() {
     }
   }
 
-  const upcomingItems = getUpcomingItems()
+  const upcomingEventsList = getUpcomingEvents()
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-950 to-blue-950' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
@@ -693,7 +667,6 @@ export default function AISocialPoster() {
               </span>
             </div>
             
-            {/* Theme Selector */}
             <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
               <Button
                 size="sm"
@@ -772,7 +745,6 @@ export default function AISocialPoster() {
                 </span>
               </div>
               
-              {/* Theme Selector */}
               <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
                 <Button
                   size="sm"
@@ -850,6 +822,20 @@ export default function AISocialPoster() {
               <Menu className={`w-5 h-5 sm:w-6 sm:h-6 ${theme === 'dark' ? 'text-gray-300' : ''}`} />
             </button>
             <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={theme === 'light' ? 'default' : 'ghost'}
+                onClick={() => setTheme('light')}
+              >
+                <Sun className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant={theme === 'dark' ? 'default' : 'ghost'}
+                onClick={() => setTheme('dark')}
+              >
+                <Moon className="w-4 h-4" />
+              </Button>
               <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
                 <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
                 <AvatarFallback>D</AvatarFallback>
@@ -877,7 +863,7 @@ export default function AISocialPoster() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                     {connections.map((conn) => (
                       <Card key={conn.platform} className={`hover:shadow-lg transition-shadow ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}`}>
-                        <CardHeader className="p-4 sm:p-6">
+                        <CardHeader className="p-3 sm:p-4 md:p-6">
                           <div className="flex items-center justify-between">
                             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center ${
                               conn.platform === 'youtube' ? 'bg-red-500' :
@@ -890,7 +876,7 @@ export default function AISocialPoster() {
                             </div>
                             <button
                               onClick={() => toggleConnection(conn.platform)}
-                              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${
+                              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${
                                 conn.connected
                                   ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                   : theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-muted hover:bg-muted/80'
@@ -901,7 +887,7 @@ export default function AISocialPoster() {
                             </button>
                           </div>
                         </CardHeader>
-                        <CardContent className="p-4 sm:p-6 pt-0">
+                        <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                           <div className="space-y-2 sm:space-y-3">
                             <div>
                               <p className={`text-xl sm:text-2xl font-bold ${theme === 'dark' ? 'text-white' : ''}`}>{conn.stats?.followers || '0'}</p>
@@ -937,9 +923,9 @@ export default function AISocialPoster() {
                   </div>
 
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-                    <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+                    <div className="xl:col-span-2 space-y-3 sm:space-y-6">
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
-                        <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6 space-y-3 sm:space-y-4">
+                        <CardContent className="p-3 sm:p-4 md:p-6 pt-3 sm:pt-4 md:pt-6 space-y-3 sm:space-y-4">
                           {/* Media Upload */}
                           <div className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center hover:border-blue-500/50 transition-colors cursor-pointer ${theme === 'dark' ? 'border-gray-700' : ''}`}>
                             <input
@@ -1049,7 +1035,7 @@ export default function AISocialPoster() {
                           </div>
 
                           {/* Schedule & Post */}
-                          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4 border-t ${theme === 'dark' ? 'border-gray-800' : ''}`}>
+                          <div className={`flex flex-col sm:flex-row gap-2.5 sm:gap-4 pt-3 sm:pt-4 border-t ${theme === 'dark' ? 'border-gray-800' : ''}`}>
                             <div className="flex-1 space-y-1.5 sm:space-y-2">
                               <label className={`text-xs sm:text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : ''}`}>Schedule (Optional)</label>
                               <Input
@@ -1071,13 +1057,13 @@ export default function AISocialPoster() {
                       </Card>
                     </div>
 
-                    {/* Preview Sidebar - Hidden on small screens */}
-                    <div className="hidden lg:block space-y-4 sm:space-y-6">
+                    {/* Preview Sidebar */}
+                    <div className="space-y-3 sm:space-y-6 hidden xl:block">
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
-                        <CardHeader className="p-4 sm:p-6 pb-3">
-                          <CardTitle className={`text-lg sm:text-base ${theme === 'dark' ? 'text-white' : ''}`}>Preview</CardTitle>
+                        <CardHeader className="p-3 sm:p-4 md:p-6 pb-3">
+                          <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>Preview</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-4 sm:p-6 pt-0">
+                        <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                           <div className={`border rounded-lg overflow-hidden ${theme === 'dark' ? 'border-gray-700' : ''}`}>
                             {mediaPreview ? (
                               <img 
@@ -1100,7 +1086,7 @@ export default function AISocialPoster() {
                       </Card>
 
                       <Card className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 ${theme === 'dark' ? 'border-gray-800' : 'border-none'}`}>
-                        <CardContent className="p-4 sm:p-6 pt-4 sm:pt-6">
+                        <CardContent className="p-3 sm:p-4 md:p-6 pt-3 sm:pt-6">
                           <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mb-2 sm:mb-3" />
                           <h3 className={`text-sm sm:text-base font-semibold mb-1.5 sm:mb-2 ${theme === 'dark' ? 'text-white' : ''}`}>✨ AI Pro Tip</h3>
                           <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
@@ -1121,7 +1107,7 @@ export default function AISocialPoster() {
                       <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 ${theme === 'dark' ? 'text-white' : ''}`}>Content Calendar</h1>
                       <p className={`text-sm sm:text-base text-muted-foreground`}>Plan your monthly strategy.</p>
                     </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-0 flex-wrap">
+                    <div className="flex items-center gap-2 sm:gap-3 mt-3 sm:mt-0 flex-wrap">
                       {/* Add Reminder Button */}
                       <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
                         <DialogTrigger asChild>
@@ -1225,9 +1211,9 @@ export default function AISocialPoster() {
                         size="icon"
                         onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}
                       >
-                        <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 -rotate-90" />
+                        <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
-                      <span className={`text-sm sm:text-base sm:text-lg font-semibold px-2 sm:px-4 min-w-[120px] sm:min-w-[180px] text-center ${theme === 'dark' ? 'text-white' : ''}`}>
+                      <span className={`text-base sm:text-lg sm:text-xl font-semibold px-2 sm:px-4 min-w-[120px] sm:min-w-[180px] text-center ${theme === 'dark' ? 'text-white' : ''}`}>
                         {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </span>
                       <Button
@@ -1235,126 +1221,216 @@ export default function AISocialPoster() {
                         size="icon"
                         onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}
                       >
-                        <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 rotate-90" />
+                        <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
-                  </div>
 
+                  {/* CALENDAR LAYOUT - Proper Calendar App Style */}
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-                    {/* Calendar */}
-                    <div className="xl:col-span-2">
+                    {/* Left: Calendar */}
+                    <div className="xl:col-span-2 space-y-3 sm:space-y-4">
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
                         <CardContent className="p-3 sm:p-4 md:p-6 pt-3 sm:pt-4 md:pt-6">
-                          {/* Calendar Header */}
-                          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1.5 sm:mb-2">
+                          {/* Calendar Header - Days */}
+                          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                               <div key={day} className={`text-center text-[10px] sm:text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'} py-1 sm:py-2`}>
                                 {day}
                               </div>
                             ))}
                           </div>
-                          {/* Calendar Grid - RESPONSIVE */}
+                          {/* Calendar Grid */}
                           <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                             {renderCalendarDays()}
+                          </div>
+                          {/* Legend */}
+                          <div className={`mt-3 sm:mt-4 p-3 sm:p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-muted'}`}>
+                            <div className="flex flex-wrap gap-3 sm:gap-4 text-[10px] sm:text-xs">
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full"></div>
+                                <span className={theme === 'dark' ? 'text-gray-400' : ''}>Posts</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded-full"></div>
+                                <span className={theme === 'dark' ? 'text-gray-400' : ''}>Reminders</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-500 rounded-full"></div>
+                                <span className={theme === 'dark' ? 'text-gray-400' : ''}>Events</span>
+                              </div>
+                            </div>
+                            <p className={`mt-2 sm:mt-3 text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
+                              💡 Click any date to add a reminder or event
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      {/* Legend */}
-                      <div className={`mt-3 sm:mt-4 p-3 sm:p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-900' : 'bg-muted'}`}>
-                        <p className={`text-xs sm:text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : ''}`}>Legend & Tips</p>
-                        <div className="flex flex-wrap gap-3 sm:gap-4 text-[10px] sm:text-xs">
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded"></div>
-                            <span className={theme === 'dark' ? 'text-gray-400' : ''}>Post</span>
+                      {/* EVENTS LIST CARD */}
+                      <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
+                        <CardHeader className="p-3 sm:p-4 flex flex-row items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <List className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>All Events</CardTitle>
                           </div>
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded"></div>
-                            <span className={theme === 'dark' ? 'text-gray-400' : ''}>Reminder</span>
+                        </CardHeader>
+                        <CardContent className="p-3 sm:p-4 pt-2 sm:pt-3">
+                          {events.length === 0 ? (
+                            <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-4 sm:py-6`}>
+                              No events yet. Add your first event!
+                            </p>
+                          ) : (
+                            <ScrollArea className="max-h-[200px] sm:max-h-[300px]">
+                              <div className="space-y-2 sm:space-y-3">
+                                {events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
+                                  <div 
+                                    key={event.id}
+                                    className={`p-2.5 sm:p-3 rounded-lg border ${
+                                      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <p className={`text-xs sm:text-sm font-medium ${theme === 'dark' ? 'text-white' : ''} mb-1`}>
+                                          {event.title}
+                                        </p>
+                                        <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                                          {new Date(event.date).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </p>
+                                        {event.note && (
+                                          <p className={`text-[10px] sm:text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
+                                            {event.note}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <button
+                                        onClick={() => deleteEvent(event.id)}
+                                        className={`p-1.5 sm:p-2 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                                      >
+                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* REMINDERS LIST CARD */}
+                      <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
+                        <CardHeader className="p-3 sm:p-4 flex flex-row items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>All Reminders</CardTitle>
                           </div>
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-500 rounded"></div>
-                            <span className={theme === 'dark' ? 'text-gray-400' : ''}>Event</span>
-                          </div>
-                        </div>
-                        <p className={`mt-2 sm:mt-3 text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
-                          💡 Click any date to add a reminder or event
-                        </p>
-                      </div>
+                        </CardHeader>
+                        <CardContent className="p-3 sm:p-4 pt-2 sm:pt-3">
+                          {reminders.length === 0 ? (
+                            <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} text-center py-4 sm:py-6`}>
+                              No reminders yet. Add your first reminder!
+                            </p>
+                          ) : (
+                            <ScrollArea className="max-h-[200px] sm:max-h-[300px]">
+                              <div className="space-y-2 sm:space-y-3">
+                                {reminders.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((reminder) => (
+                                  <div 
+                                    key={reminder.id}
+                                    className={`p-2.5 sm:p-3 rounded-lg border ${
+                                      reminder.completed 
+                                        ? 'opacity-60' 
+                                        : ''
+                                    } ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <button
+                                            onClick={() => toggleReminder(reminder.id, reminder.completed)}
+                                            className={`p-1 rounded hover:bg-white/10 ${
+                                              reminder.completed
+                                                ? 'bg-green-600 text-white'
+                                                : theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'
+                                            }`}
+                                          >
+                                            <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                                          </button>
+                                          <p className={`text-xs sm:text-sm font-medium ${reminder.completed ? 'line-through' : ''} ${theme === 'dark' ? 'text-white' : ''}`}>
+                                            {reminder.title}
+                                          </p>
+                                        </div>
+                                        <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                                          {new Date(reminder.date).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </p>
+                                      </div>
+                                      <button
+                                        onClick={() => deleteReminder(reminder.id)}
+                                        className={`p-1.5 sm:p-2 rounded hover:bg-white/10 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                                      >
+                                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          )}
+                        </CardContent>
+                      </Card>
                     </div>
 
-                    {/* Upcoming Events Sidebar */}
+                    {/* Right: Upcoming Events Sidebar */}
                     <div className="space-y-3 sm:space-y-6 hidden xl:block">
                       <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
                         <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
-                          <CardTitle className={`text-base sm:text-lg ${theme === 'dark' ? 'text-white' : ''}`}>📅 Upcoming</CardTitle>
+                          <CardTitle className={`text-base sm:text-lg flex items-center gap-2 ${theme === 'dark' ? 'text-white' : ''}`}>
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                            Coming Up
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 sm:p-4 md:p-6 pt-2 sm:pt-3">
-                          {upcomingItems.length === 0 ? (
+                          {upcomingEventsList.length === 0 ? (
                             <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
-                              No upcoming events or reminders.
+                              No upcoming events.
                             </p>
                           ) : (
                             <div className="space-y-2 sm:space-y-3">
-                              {upcomingItems.map((item) => (
+                              {upcomingEventsList.map((event) => (
                                 <div 
-                                  key={`${item.type}-${item.data.id}`} 
-                                  className={`p-2 sm:p-3 rounded-lg border ${
-                                    item.type === 'reminder' 
-                                      ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' 
-                                      : item.type === 'event' 
-                                        ? 'bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800'
-                                        : 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-                                  }`}
+                                  key={event.id}
+                                  className={`p-2.5 sm:p-3 rounded-lg border bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800`}
                                 >
                                   <div className="flex items-start justify-between gap-1.5 sm:gap-2">
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                                        {item.type === 'reminder' && <Bell className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-600" />}
-                                        {item.type === 'event' && <CalendarDays className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-600" />}
-                                        {item.type === 'post' && <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-600" />}
-                                        <p className={`text-[10px] sm:text-xs font-medium truncate ${theme === 'dark' ? 'text-gray-200' : ''}`}>
-                                          {item.type === 'post' ? (item.data as Post).caption.substring(0, 20) + '...' : (item.data as Reminder | Event).title}
-                                        </p>
-                                      </div>
+                                      <p className={`text-[10px] sm:text-xs font-semibold ${theme === 'dark' ? 'text-gray-200' : ''} mb-1`}>
+                                        {event.title}
+                                      </p>
                                       <p className={`text-[10px] sm:text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'}`}>
-                                        {new Date(item.data.date || (item.data as Post).scheduledAt || (item.data as Post).createdAt).toLocaleDateString('en-US', {
+                                        {new Date(event.date).toLocaleDateString('en-US', {
                                           month: 'short',
                                           day: 'numeric',
                                           hour: '2-digit',
                                           minute: '2-digit'
                                         })}
                                       </p>
-                                      {item.type === 'event' && (item.data as Event).note && (
+                                      {event.note && (
                                         <p className={`text-[10px] sm:text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-muted-foreground'} line-clamp-2`}>
-                                          {(item.data as Event).note}
+                                          {event.note}
                                         </p>
                                       )}
                                     </div>
-                                    {item.type === 'reminder' && (
-                                      <div className="flex items-center gap-0.5 sm:gap-1">
-                                        <button
-                                          onClick={() => toggleReminder(item.data.id, (item.data as Reminder).completed)}
-                                          className={`p-0.5 sm:p-1 rounded hover:bg-white/50 ${theme === 'dark' ? 'text-gray-400' : ''}`}
-                                        >
-                                          <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                        </button>
-                                        <button
-                                          onClick={() => deleteReminder(item.data.id)}
-                                          className={`p-0.5 sm:p-1 rounded hover:bg-white/50 ${theme === 'dark' ? 'text-gray-400' : ''}`}
-                                        >
-                                          <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                        </button>
-                                      </div>
-                                    )}
-                                    {item.type === 'event' && (
-                                      <button
-                                        onClick={() => deleteEvent(item.data.id)}
-                                        className={`p-0.5 sm:p-1 rounded hover:bg-white/50 ${theme === 'dark' ? 'text-gray-400' : ''}`}
-                                      >
-                                        <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                      </button>
-                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -1379,7 +1455,7 @@ export default function AISocialPoster() {
 
                   <Card className={theme === 'dark' ? 'bg-gray-900 border-gray-800' : ''}>
                     <CardContent className="p-3 sm:p-4 md:p-6 pt-3 sm:pt-4 md:pt-6">
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-3 sm:mb-6">
                         <Select value={filterPlatform} onValueChange={setFilterPlatform}>
                           <SelectTrigger className={`w-full sm:w-[180px] text-xs sm:text-sm ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}>
                             <SelectValue placeholder="All Platforms" />
