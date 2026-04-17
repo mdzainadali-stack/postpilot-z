@@ -19,25 +19,36 @@ model User {
 }
 
 model SocialPost {
-  id          String   @id @default(cuid())
-  caption     String
-  mediaUrl    String?
-  mediaType   String?  // 'image' or 'video'
-  platforms   String   // JSON array of platforms (youtube, instagram, facebook)
-  status      String   @default("draft") // draft, scheduled, posted, failed
-  scheduledAt DateTime?
-  postedAt    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  caption      String
+  mediaUrl     String?
+  mediaType    String?  // 'image' or 'video'
+  platforms    String   // JSON array of platforms (youtube, instagram, facebook)
+  status       String   @default("draft") // draft, scheduled, posted, failed
+  scheduledAt  DateTime?
+  postedAt     DateTime?
+  errorMessage String?
+  // Analytics metrics
+  likes        Int      @default(0)
+  comments     Int      @default(0)
+  shares       Int      @default(0)
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model PlatformConnection {
-  id        String   @id @default(cuid())
-  platform  String   // youtube, instagram, facebook
-  connected Boolean  @default(false)
-  userId    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  platform     String    // youtube, instagram, facebook
+  connected    Boolean   @default(false)
+  accountName  String?   // Display name of the account
+  accountHandle String?  // Username/handle
+  avatarUrl    String?   // Profile picture URL
+  accessToken  String?   // OAuth access token
+  refreshToken String?   // OAuth refresh token
+  userId       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@unique([platform])
 }
