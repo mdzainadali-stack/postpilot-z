@@ -33,7 +33,8 @@ import {
   MessageSquare,
   ThumbsUp,
   ArrowLeft,
-  Play
+  Play,
+  Share2
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { 
@@ -127,6 +128,46 @@ interface YouTubeAnalytics {
   viewsTrend: Array<{ name: string; views: number }>
   likesTrend: Array<{ name: string; likes: number }>
   commentsTrend: Array<{ name: string; comments: number }>
+}
+
+interface InstagramPost {
+  id: string
+  caption: string
+  imageUrl: string
+  likes: string
+  comments: string
+  shares: string
+  createdAt: string
+}
+
+interface InstagramAnalytics {
+  followers: string
+  totalPosts: string
+  avgEngagement: string
+  reach: string
+  likesTrend: Array<{ name: string; likes: number }>
+  commentsTrend: Array<{ name: string; comments: number }>
+  sharesTrend: Array<{ name: string; shares: number }>
+}
+
+interface FacebookPost {
+  id: string
+  caption: string
+  imageUrl: string
+  likes: string
+  comments: string
+  shares: string
+  createdAt: string
+}
+
+interface FacebookAnalytics {
+  followers: string
+  totalPosts: string
+  pageViews: string
+  avgEngagement: string
+  likesTrend: Array<{ name: string; likes: number }>
+  commentsTrend: Array<{ name: string; comments: number }>
+  sharesTrend: Array<{ name: string; shares: number }>
 }
 
 export default function AISocialPoster() {
@@ -266,6 +307,202 @@ export default function AISocialPoster() {
       likes: '4.1K',
       comments: '540',
       uploadedAt: '2023-12-28',
+    },
+  ])
+
+  // Instagram analytics data
+  const [instagramAnalytics, setInstagramAnalytics] = useState<InstagramAnalytics>({
+    followers: '45.2K',
+    totalPosts: '328',
+    avgEngagement: '3.5%',
+    reach: '128K',
+    likesTrend: [
+      { name: 'Jan', likes: 4200 },
+      { name: 'Feb', likes: 4800 },
+      { name: 'Mar', likes: 5500 },
+      { name: 'Apr', likes: 5100 },
+      { name: 'May', likes: 6200 },
+      { name: 'Jun', likes: 7100 },
+      { name: 'Jul', likes: 6800 },
+      { name: 'Aug', likes: 7900 },
+      { name: 'Sep', likes: 8500 },
+      { name: 'Oct', likes: 9200 },
+      { name: 'Nov', likes: 9800 },
+      { name: 'Dec', likes: 10500 },
+    ],
+    commentsTrend: [
+      { name: 'Jan', comments: 580 },
+      { name: 'Feb', comments: 640 },
+      { name: 'Mar', comments: 720 },
+      { name: 'Apr', comments: 690 },
+      { name: 'May', comments: 810 },
+      { name: 'Jun', comments: 890 },
+      { name: 'Jul', comments: 850 },
+      { name: 'Aug', comments: 960 },
+      { name: 'Sep', comments: 1020 },
+      { name: 'Oct', comments: 1100 },
+      { name: 'Nov', comments: 1180 },
+      { name: 'Dec', comments: 1250 },
+    ],
+    sharesTrend: [
+      { name: 'Jan', shares: 210 },
+      { name: 'Feb', shares: 250 },
+      { name: 'Mar', shares: 290 },
+      { name: 'Apr', shares: 270 },
+      { name: 'May', shares: 340 },
+      { name: 'Jun', shares: 390 },
+      { name: 'Jul', shares: 370 },
+      { name: 'Aug', shares: 420 },
+      { name: 'Sep', shares: 470 },
+      { name: 'Oct', shares: 510 },
+      { name: 'Nov', shares: 560 },
+      { name: 'Dec', shares: 620 },
+    ],
+  })
+
+  const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([
+    {
+      id: '1',
+      caption: 'Beautiful sunset view from my window today! 🌅 #sunset #nature #photography',
+      imageUrl: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=400&h=300&fit=crop',
+      likes: '3.2K',
+      comments: '428',
+      shares: '156',
+      createdAt: '2024-01-15',
+    },
+    {
+      id: '2',
+      caption: 'New project update! Check out our latest design work. 💼✨ #design #work #creativity',
+      imageUrl: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
+      likes: '2.8K',
+      comments: '365',
+      shares: '142',
+      createdAt: '2024-01-12',
+    },
+    {
+      id: '3',
+      caption: 'Coffee and coding - perfect combo! ☕💻 #coding #developer #lifestyle',
+      imageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
+      likes: '2.5K',
+      comments: '298',
+      shares: '118',
+      createdAt: '2024-01-10',
+    },
+    {
+      id: '4',
+      caption: 'Travel vibes from Barcelona! 🇪🇸✈️ #travel #barcelona #adventure',
+      imageUrl: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=400&h=300&fit=crop',
+      likes: '4.1K',
+      comments: '512',
+      shares: '203',
+      createdAt: '2024-01-08',
+    },
+    {
+      id: '5',
+      caption: 'New team member announcement! Welcome aboard! 🎉 #team #welcome #growth',
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop',
+      likes: '2.1K',
+      comments: '245',
+      shares: '98',
+      createdAt: '2024-01-05',
+    },
+  ])
+
+  // Facebook analytics data
+  const [facebookAnalytics, setFacebookAnalytics] = useState<FacebookAnalytics>({
+    followers: '12K',
+    totalPosts: '245',
+    pageViews: '89K',
+    avgEngagement: '2.8%',
+    likesTrend: [
+      { name: 'Jan', likes: 1800 },
+      { name: 'Feb', likes: 2100 },
+      { name: 'Mar', likes: 2400 },
+      { name: 'Apr', likes: 2200 },
+      { name: 'May', likes: 2700 },
+      { name: 'Jun', likes: 3100 },
+      { name: 'Jul', likes: 2900 },
+      { name: 'Aug', likes: 3400 },
+      { name: 'Sep', likes: 3700 },
+      { name: 'Oct', likes: 4000 },
+      { name: 'Nov', likes: 4300 },
+      { name: 'Dec', likes: 4600 },
+    ],
+    commentsTrend: [
+      { name: 'Jan', comments: 320 },
+      { name: 'Feb', comments: 360 },
+      { name: 'Mar', comments: 410 },
+      { name: 'Apr', comments: 380 },
+      { name: 'May', comments: 440 },
+      { name: 'Jun', comments: 490 },
+      { name: 'Jul', comments: 460 },
+      { name: 'Sep', comments: 520 },
+      { name: 'Oct', comments: 560 },
+      { name: 'Nov', comments: 590 },
+      { name: 'Dec', comments: 620 },
+      { name: 'Aug', comments: 490 },
+    ],
+    sharesTrend: [
+      { name: 'Jan', shares: 140 },
+      { name: 'Feb', shares: 170 },
+      { name: 'Mar', shares: 200 },
+      { name: 'Apr', shares: 180 },
+      { name: 'May', shares: 230 },
+      { name: 'Jun', shares: 260 },
+      { name: 'Jul', shares: 240 },
+      { name: 'Aug', shares: 280 },
+      { name: 'Sep', shares: 310 },
+      { name: 'Oct', shares: 340 },
+      { name: 'Nov', shares: 370 },
+      { name: 'Dec', shares: 410 },
+    ],
+  })
+
+  const [facebookPosts, setFacebookPosts] = useState<FacebookPost[]>([
+    {
+      id: '1',
+      caption: 'Check out our latest product launch! 🚀 We are excited to bring you something new and innovative.',
+      imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop',
+      likes: '2.4K',
+      comments: '328',
+      shares: '245',
+      createdAt: '2024-01-15',
+    },
+    {
+      id: '2',
+      caption: 'Happy New Year from our team! Wishing everyone a prosperous 2024! 🎆✨',
+      imageUrl: 'https://images.unsplash.com/photo-1532153267853-0f0469af93d4?w=400&h=300&fit=crop',
+      likes: '3.1K',
+      comments: '415',
+      shares: '368',
+      createdAt: '2024-01-01',
+    },
+    {
+      id: '3',
+      caption: 'Behind the scenes at our office! Meet our amazing team members. 👥💼',
+      imageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop',
+      likes: '1.8K',
+      comments: '242',
+      shares: '186',
+      createdAt: '2023-12-28',
+    },
+    {
+      id: '4',
+      caption: 'Quick tip: Stay hydrated and take breaks! Your health matters! 💧🏃‍♂️',
+      imageUrl: 'https://images.unsplash.com/photo-1544367563-12123d8965cd?w=400&h=300&fit=crop',
+      likes: '1.5K',
+      comments: '198',
+      shares: '142',
+      createdAt: '2023-12-25',
+    },
+    {
+      id: '5',
+      caption: 'Holiday sale is ON! Up to 50% off on all products. Don\'t miss out! 🎁🛒',
+      imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=300&fit=crop',
+      likes: '2.8K',
+      comments: '365',
+      shares: '298',
+      createdAt: '2023-12-20',
     },
   ])
 
@@ -1685,6 +1922,386 @@ export default function AISocialPoster() {
                             <div className="flex items-center gap-1 text-xs">
                               <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                               <span className="font-semibold">{video.comments}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Instagram Analytics View */}
+          {activeView === 'instagram' && (
+            <>
+              <div className="flex items-center gap-4 mb-6">
+                <Button
+                  onClick={() => setActiveView('dashboard')}
+                  variant="outline"
+                  className="rounded-xl hover:shadow-lg transition-all"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-pink-600 via-red-500 to-yellow-500 bg-clip-text text-transparent">Instagram Analytics</h1>
+                  <p className="text-muted-foreground font-medium">Track your Instagram performance & growth.</p>
+                </div>
+              </div>
+
+              {/* Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-pink-200/30 dark:border-pink-800/30 bg-gradient-to-br from-white to-pink-50/50 dark:from-pink-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Instagram className="w-8 h-8 mx-auto mb-3 text-pink-600 dark:text-pink-400" />
+                    <p className="text-3xl font-black mb-1">{instagramAnalytics.followers}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Followers</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-pink-200/30 dark:border-pink-800/30 bg-gradient-to-br from-white to-pink-50/50 dark:from-pink-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <ImageIcon className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
+                    <p className="text-3xl font-black mb-1">{instagramAnalytics.totalPosts}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Total Posts</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-pink-200/30 dark:border-pink-800/30 bg-gradient-to-br from-white to-pink-50/50 dark:from-pink-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-3 text-green-600 dark:text-green-400" />
+                    <p className="text-3xl font-black mb-1">{instagramAnalytics.avgEngagement}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Avg Engagement</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-pink-200/30 dark:border-pink-800/30 bg-gradient-to-br from-white to-pink-50/50 dark:from-pink-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Eye className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400" />
+                    <p className="text-3xl font-black mb-1">{instagramAnalytics.reach}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Reach</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <Card className="col-span-1 md:col-span-3 border-2 border-pink-200/30 dark:border-pink-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <ThumbsUp className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                      Likes Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={instagramAnalytics.likesTrend}>
+                        <defs>
+                          <linearGradient id="igLikesGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(236, 72, 153, 0.9)',
+                            border: '1px solid #ec4899',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Area type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} fill="url(#igLikesGradient)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-blue-200/30 dark:border-blue-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      Comments Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={instagramAnalytics.commentsTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Bar dataKey="comments" fill="#3b82f6" radius={[8, 8, 8, 8, 8]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-green-200/30 dark:border-green-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <Share2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      Shares Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={instagramAnalytics.sharesTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(34, 197, 94, 0.9)',
+                            border: '1px solid #22c55e',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e', r: 4 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Posts */}
+              <Card className="border-2 border-pink-200/30 dark:border-pink-800/30 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-black flex items-center gap-2">
+                    <Instagram className="w-6 h-6 text-pink-600 dark:text-pink-400" />
+                    Recent 5 Posts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {instagramPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-pink-50/30 to-white dark:from-pink-950/30 dark:to-black/30 border border-pink-200/30 dark:border-pink-800/30 hover:shadow-lg transition-all"
+                      >
+                        <img
+                          src={post.imageUrl}
+                          alt={post.caption}
+                          className="w-32 h-20 object-cover rounded-lg shadow-md flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-bold text-sm line-clamp-2 pr-4">{post.caption}</h3>
+                            <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-xs">
+                              <ThumbsUp className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                              <span className="font-semibold">{post.likes}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                              <span className="font-semibold">{post.comments}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <Share2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <span className="font-semibold">{post.shares}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Facebook Analytics View */}
+          {activeView === 'facebook' && (
+            <>
+              <div className="flex items-center gap-4 mb-6">
+                <Button
+                  onClick={() => setActiveView('dashboard')}
+                  variant="outline"
+                  className="rounded-xl hover:shadow-lg transition-all"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">Facebook Analytics</h1>
+                  <p className="text-muted-foreground font-medium">Track your Facebook page performance & growth.</p>
+                </div>
+              </div>
+
+              {/* Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Facebook className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
+                    <p className="text-3xl font-black mb-1">{facebookAnalytics.followers}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Followers</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <ImageIcon className="w-8 h-8 mx-auto mb-3 text-green-600 dark:text-green-400" />
+                    <p className="text-3xl font-black mb-1">{facebookAnalytics.totalPosts}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Total Posts</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <Eye className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400" />
+                    <p className="text-3xl font-black mb-1">{facebookAnalytics.pageViews}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Page Views</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50">
+                  <CardContent className="pt-6 text-center">
+                    <TrendingUp className="w-8 h-8 mx-auto mb-3 text-orange-600 dark:text-orange-400" />
+                    <p className="text-3xl font-black mb-1">{facebookAnalytics.avgEngagement}</p>
+                    <p className="text-sm font-semibold text-muted-foreground">Avg Engagement</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <Card className="col-span-1 md:col-span-3 border-2 border-blue-200/30 dark:border-blue-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <ThumbsUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      Likes Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <AreaChart data={facebookAnalytics.likesTrend}>
+                        <defs>
+                          <linearGradient id="fbLikesGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(59, 130, 246, 0.9)',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Area type="monotone" dataKey="likes" stroke="#3b82f6" strokeWidth={2} fill="url(#fbLikesGradient)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-green-200/30 dark:border-green-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      Comments Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={facebookAnalytics.commentsTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(34, 197, 94, 0.9)',
+                            border: '1px solid #22c55e',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Bar dataKey="comments" fill="#22c55e" radius={[8, 8, 8, 8, 8]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className="col-span-1 md:col-span-3 border-2 border-orange-200/30 dark:border-orange-800/30 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-black flex items-center gap-2">
+                      <Share2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                      Shares Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={facebookAnalytics.sharesTrend}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" strokeOpacity={0.5} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(249, 115, 22, 0.9)',
+                            border: '1px solid #f97316',
+                            borderRadius: '8px',
+                            color: '#fff'
+                          }}
+                        />
+                        <Line type="monotone" dataKey="shares" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', r: 4 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Posts */}
+              <Card className="border-2 border-blue-200/30 dark:border-blue-800/30 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-black flex items-center gap-2">
+                    <Facebook className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    Recent 5 Posts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {facebookPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/30 to-white dark:from-blue-950/30 dark:to-black/30 border border-blue-200/30 dark:border-blue-800/30 hover:shadow-lg transition-all"
+                      >
+                        <img
+                          src={post.imageUrl}
+                          alt={post.caption}
+                          className="w-32 h-20 object-cover rounded-lg shadow-md flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-bold text-sm line-clamp-2 pr-4">{post.caption}</h3>
+                            <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-xs">
+                              <ThumbsUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                              <span className="font-semibold">{post.likes}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <span className="font-semibold">{post.comments}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs">
+                              <Share2 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                              <span className="font-semibold">{post.shares}</span>
                             </div>
                           </div>
                         </div>
