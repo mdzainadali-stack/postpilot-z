@@ -26,7 +26,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
-  Edit2
+  Edit2,
+  BarChart3,
+  TrendingUp,
+  Eye,
+  MessageSquare,
+  ThumbsUp,
+  ArrowLeft,
+  Play
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { 
@@ -62,6 +69,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
 interface Post {
   id: string
@@ -99,6 +107,26 @@ interface Event {
   date: string
   note?: string
   createdAt: string
+}
+
+interface YouTubeVideo {
+  id: string
+  title: string
+  thumbnail: string
+  views: string
+  likes: string
+  comments: string
+  uploadedAt: string
+}
+
+interface YouTubeAnalytics {
+  subscribers: string
+  totalViews: string
+  totalVideos: string
+  engagementRate: string
+  viewsTrend: Array<{ name: string; views: number }>
+  likesTrend: Array<{ name: string; likes: number }>
+  commentsTrend: Array<{ name: string; comments: number }>
 }
 
 export default function AISocialPoster() {
@@ -142,6 +170,104 @@ export default function AISocialPoster() {
   const [eventTitle, setEventTitle] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [eventNote, setEventNote] = useState('')
+
+  // YouTube analytics data
+  const [youtubeAnalytics, setYoutubeAnalytics] = useState<YouTubeAnalytics>({
+    subscribers: '125K',
+    totalViews: '2.4M',
+    totalVideos: '156',
+    engagementRate: '4.2%',
+    viewsTrend: [
+      { name: 'Jan', views: 120000 },
+      { name: 'Feb', views: 150000 },
+      { name: 'Mar', views: 180000 },
+      { name: 'Apr', views: 140000 },
+      { name: 'May', views: 200000 },
+      { name: 'Jun', views: 250000 },
+      { name: 'Jul', views: 220000 },
+      { name: 'Aug', views: 280000 },
+      { name: 'Sep', views: 320000 },
+      { name: 'Oct', views: 380000 },
+      { name: 'Nov', views: 420000 },
+      { name: 'Dec', views: 480000 },
+    ],
+    likesTrend: [
+      { name: 'Jan', likes: 8500 },
+      { name: 'Feb', likes: 9200 },
+      { name: 'Mar', likes: 11000 },
+      { name: 'Apr', likes: 9500 },
+      { name: 'May', likes: 13000 },
+      { name: 'Jun', likes: 15500 },
+      { name: 'Jul', likes: 14200 },
+      { name: 'Aug', likes: 17800 },
+      { name: 'Sep', likes: 21000 },
+      { name: 'Oct', likes: 24500 },
+      { name: 'Nov', likes: 28800 },
+      { name: 'Dec', likes: 32000 },
+    ],
+    commentsTrend: [
+      { name: 'Jan', comments: 1200 },
+      { name: 'Feb', comments: 1450 },
+      { name: 'Mar', comments: 1800 },
+      { name: 'Apr', comments: 1350 },
+      { name: 'May', comments: 2100 },
+      { name: 'Jun', comments: 2500 },
+      { name: 'Jul', comments: 2300 },
+      { name: 'Aug', comments: 2800 },
+      { name: 'Sep', comments: 3200 },
+      { name: 'Oct', comments: 3650 },
+      { name: 'Nov', comments: 4100 },
+      { name: 'Dec', comments: 4800 },
+    ],
+  })
+
+  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([
+    {
+      id: '1',
+      title: 'How to Build a Full-Stack App with Next.js',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      views: '125K',
+      likes: '8.5K',
+      comments: '1.2K',
+      uploadedAt: '2024-01-15',
+    },
+    {
+      id: '2',
+      title: 'React Tutorial for Beginners - Complete Guide',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      views: '98K',
+      likes: '7.2K',
+      comments: '980',
+      uploadedAt: '2024-01-10',
+    },
+    {
+      id: '3',
+      title: 'Tailwind CSS Tips & Tricks 2024',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      views: '76K',
+      likes: '5.8K',
+      comments: '750',
+      uploadedAt: '2024-01-05',
+    },
+    {
+      id: '4',
+      title: 'Building Modern UI with shadcn/ui',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      views: '64K',
+      likes: '4.9K',
+      comments: '620',
+      uploadedAt: '2024-01-01',
+    },
+    {
+      id: '5',
+      title: 'TypeScript Best Practices You Should Know',
+      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      views: '52K',
+      likes: '4.1K',
+      comments: '540',
+      uploadedAt: '2023-12-28',
+    },
+  ])
 
   const { toast } = useToast()
 
@@ -217,10 +343,22 @@ export default function AISocialPoster() {
     )
     toast({
       title: platform === 'youtube' ? 'YouTube' : platform === 'instagram' ? 'Instagram' : 'Facebook',
-      description: connections.find(c => c.platform === platform)?.connected 
-        ? 'Disconnected' 
+      description: connections.find(c => c.platform === platform)?.connected
+        ? 'Disconnected'
         : 'Connected successfully',
     })
+  }
+
+  const openPlatformAnalytics = (platform: 'youtube' | 'instagram' | 'facebook') => {
+    if (connections.find(c => c.platform === platform)?.connected) {
+      setActiveView(platform)
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Not Connected',
+        description: `Please connect your ${platform} account first to view analytics.`,
+      })
+    }
   }
 
   const createPost = async () => {
@@ -746,7 +884,11 @@ export default function AISocialPoster() {
               {/* Platform Connections */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {connections.map((conn) => (
-                  <Card key={conn.platform} className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50">
+                  <Card
+                    key={conn.platform}
+                    onClick={() => openPlatformAnalytics(conn.platform)}
+                    className="hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-blue-200/30 dark:border-blue-800/30 bg-gradient-to-br from-white to-blue-50/50 dark:from-blue-950/50 dark:to-black/50 cursor-pointer"
+                  >
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
@@ -759,7 +901,10 @@ export default function AISocialPoster() {
                           {conn.platform === 'facebook' && <Facebook className="w-7 h-7 text-white" />}
                         </div>
                         <button
-                          onClick={() => toggleConnection(conn.platform)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleConnection(conn.platform)
+                          }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                             conn.connected
                               ? 'bg-gradient-to-r from-green-400 to-green-500 text-white shadow-md shadow-green-500/30 hover:shadow-lg hover:shadow-green-500/50 hover:scale-105'
