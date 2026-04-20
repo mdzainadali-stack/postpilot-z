@@ -45,13 +45,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <SessionProvider>
-            {children}
-          </SessionProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
+
         <Toaster />
       </body>
     </html>
